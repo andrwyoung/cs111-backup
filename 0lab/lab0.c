@@ -1,43 +1,46 @@
 //NAME: Andrew Yong
 //EMAIL: yong.andrew11@gmail.com
 //ID: 604905807
-#include <stdio.h>
-#include <getopt.h>
+#include <stdio.h> //fprintf
+#include <getopt.h> //getopt
 #include <fcntl.h> // open
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h> //dup write read close
-#define BUFF_SIZE 3
+#include <stdlib.h> //exit
+#define BUFF_SIZE 100 
 
-void chin(char file[])
+int chin(char file[])
 {
 	int fd0 = open(file, O_RDONLY);
 	if(fd0 >= 0)
 	{
-		fprintf(stderr,  "chin: open successful\n");
 		close(0);
 		dup(fd0);
 		close(fd0);
+		return 0;
 	}
 	else
 	{
-		fprintf(stderr,  "chin: open failed\n");
+		fprintf(stderr,  "chin: failed to open %s\n", file);
+		return 1;
 	}
 }
 
-void chout(char file[])
+int chout(char file[])
 {
 	int fd1 = creat(file, 0644);
 	if (fd1 >= 0)
 	{
-		fprintf(stderr,  "chout: creat successful\n");
 		close(1);
 		dup(fd1);
 		close(fd1);
+		return 0;
 	}
 	else
 	{
-		fprintf(stderr,  "chout: open failed\n");
+		fprintf(stderr,  "chout: failed to create %s\n", file);
+		return 1;
 	}
 }
 
@@ -68,12 +71,10 @@ int main(int argc, char* argv[])
 		switch(c)
 		{
 			case 'i':
-				fprintf(stderr, "intput with %s\n", optarg);
-				chin(optarg);
+				if(chin(optarg)) exit(1);
 				break;
 			case 'o': 
-				fprintf(stderr, "output with %s\n", optarg);
-				chout(optarg);
+				if(chout(optarg)) exit(2);
 				break;
 			case 's':
 				fprintf(stderr, "segfault");
@@ -85,10 +86,11 @@ int main(int argc, char* argv[])
 				fprintf(stderr ,"dumping-core");
 				break;
 			case '?':
-				//getopt_long already printed an error message
-				break;
+				fprintf(stderr, "usage: lab0 [--input=FILE|--output=FILE|--dump-core|--segfault|--catch]\n");
+				exit(3);
 			default:
 				fprintf(stderr,  "don't know what's going on");
+				exit(5);
 		}
 	}
 	
@@ -99,13 +101,18 @@ int main(int argc, char* argv[])
 	{
 		int ammount = read(0, buffer, BUFF_SIZE);
 		if(ammount < 0)
-			fprintf(stderr, "write error");
-			exit(20);
-		if(ammount < BUFF_SIZE || ammount == 0)
-			fprintf(stderr, "done writing");
+		{
+			fprintf(stderr, "read error");
+			exit(5);
+		}
+		else if(ammount == 0)
 			break;
-		
-		write(1, buffer, ammount);
+
+		if(!write (1, buffer, ammount))
+		{
+			fprintf(stderr, "write error");
+			exit(5);
+		}
 	}
 		
 
