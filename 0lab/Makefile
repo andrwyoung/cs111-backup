@@ -2,13 +2,21 @@
 # EMAIL: yong.andrew11@gmail.com
 # ID: 604905807
 flags = -Wall -Wextra
+files = lab0.c Makefile README
+CC = gcc -o
 
 lab0: lab0.c
-	gcc -o lab0 $(flags) lab0.c
+	$(CC) lab0 $(flags) lab0.c
 
-.PHONY: clean dist
+
+.PHONY: check
+check:
+	echo nope
+	
+.PHONY: clean 
 clean:
-	rm lab0
+	rm $(files) lab0
 
+.PHONY: dist
 dist:
-	tar -czf lab0-604905807.tar.gz lab0 Makefile README 
+	tar -czf lab0-604905807.tar.gz $(files) 
