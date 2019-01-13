@@ -1,3 +1,9 @@
 NAME: Andrew Yong
 EMAIL: yong.andrew11@gmail.com
 ID: 604905807
+
+
+Sources:
+using system calls: https://www.ibm.com/developerworks/community/blogs/58e72888-6340-46ac-b488-d31aa4058e9c/entry/understanding_linux_open_system_call?lang=en
+getopt_long example: https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html#Getopt-Long-Option-Example
+How to change signal: signals: https://jameshfisher.com/2017/01/11/c-signal-unregister.html
