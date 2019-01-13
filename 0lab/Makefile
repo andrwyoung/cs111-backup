@@ -17,6 +17,10 @@ check:
 clean:
 	rm $(files) lab0
 
+.PHONY: debug
+debug:
+	$(CC) lab0 $(flags) -g lab0.c
+
 .PHONY: dist
 dist:
 	tar -czf lab0-604905807.tar.gz $(files) 

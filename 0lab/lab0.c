@@ -112,7 +112,6 @@ int main(int argc, char* argv[])
 
 
 	//action: write from fd 0 to 1
-	int count = 0; //how many bytes were written
 	char buffer[BUFF_SIZE];
 	while(1)
 	{

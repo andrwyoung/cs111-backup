@@ -1,0 +1,63 @@
+... using test directory /home/eva/Desktop/0lab/tester/CS111_test.eva
+... extracting /home/eva/Desktop/0lab/tester/lab0-604905807.tar.gz
+lab0.c
+Makefile
+README
+... checking for README file
+... checking for submitter ID in README
+... checking for submitter email in README
+... checking for submitter name in README
+... checking for other expected files
+... checking for required Make targets
+... checking for required compillation options
+... building default target(s)
+gcc -o lab0 -Wall -Wextra lab0.c
+... checking make check
+echo nope
+nope
+... checking make dist
+tar -czf lab0-604905807.tar.gz lab0.c Makefile README 
+ ... checking make clean
+rm lab0.c Makefile README lab0
+/tmp/DIRSNAP.1134 /tmp/DIRCHECK.1134 differ: char 6, line 3
+Incorrect directory contents:
+3,5c3
+< Makefile
+< README
+< lab0.c
+---
+> lab0-604905807.tar.gz
+... redo default make
+... checking for expected products
+... lab0 detects/reports bogus arguments
+        ./test: line 175: ./lab0: No such file or directory
+... exercise bad --input from a nonexistent file
+        ./test: line 188: ./lab0: No such file or directory
+... exercise bad --output to an unwritable file
+        ./test: line 202: ./lab0: No such file or directory
+... exercise --segfault option
+... exercise --catch --segfault option
+        ./test: line 220: ./lab0: No such file or directory
+... exercise --catch --dump-core --segfault option
+... copy stdin -> stdout
+        data comparison ... FAILURE
+... copy --input -> stdout
+        data comparison ... FAILURE
+... copy stdin -> --output
+        data comparison ... FAILURE
+... copy --input -> --output
+        data comparison ... FAILURE
+... use of expected routines
+        getopt_long ... NO REFERENCES FOUND
+        signal ... NO REFERENCES FOUND
+        strerror ... NO REFERENCES FOUND
+        close ... NO REFERENCES FOUND
+        dup2\|dup ... NO REFERENCES FOUND
+
+THE STUDENT WHO WILL RECEIVE CREDIT FOR THIS SUBMISSION IS:
+    604905807    yong.andrew11@gmail.com
+
+... cleaning up temporary files
+... removing test directory /home/eva/Desktop/0lab/tester/CS111_test.eva
+
+SUBMISSION lab0-604905807.tar.gz ... FAILS sanity check with 16 errors
