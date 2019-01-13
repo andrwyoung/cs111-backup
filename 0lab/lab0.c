@@ -8,8 +8,10 @@
 #include <sys/stat.h>
 #include <unistd.h> //dup write read close
 #include <stdlib.h> //exit
+#include <signal.h> //signal
 #define BUFF_SIZE 100 
 
+//change fd0 (stdinn) to get from file[] instead
 int chin(char file[])
 {
 	int fd0 = open(file, O_RDONLY);
@@ -22,11 +24,12 @@ int chin(char file[])
 	}
 	else
 	{
-		fprintf(stderr,  "chin: failed to open %s\n", file);
+		fprintf(stderr,  "failed to open %s\n", file);
 		return 1;
 	}
 }
 
+//change fd1 (stdout) to go to file[] instead
 int chout(char file[])
 {
 	int fd1 = creat(file, 0644);
@@ -39,15 +42,28 @@ int chout(char file[])
 	}
 	else
 	{
-		fprintf(stderr,  "chout: failed to create %s\n", file);
+		fprintf(stderr,  "failed to create %s\n", file);
 		return 1;
 	}
+}
+
+//set up a signal handler for segmentation faults
+void catcher()
+{
+	fprintf(stderr, "caught sementation fault\n");
+	exit(4);
+}
+
+//force a segmentation fault
+void segfault()
+{
+	int* p = 0;
+	*p = 10;
 }
 
 int main(int argc, char* argv[])
 {
 	int c; //return value of that option 
-	int dump = 1; //whether to dump core or not
 
 	//looping through to check syntax first
 	while(1)
@@ -77,23 +93,24 @@ int main(int argc, char* argv[])
 				if(chout(optarg)) exit(2);
 				break;
 			case 's':
-				fprintf(stderr, "segfault");
+				segfault();
 				break;
 			case 'c':
-				fprintf(stderr, "catching....");
+				signal(SIGSEGV, catcher);
 				break;
 			case 'd':
-				fprintf(stderr ,"dumping-core");
+				signal(SIGSEGV, SIG_DFL);
 				break;
 			case '?':
 				fprintf(stderr, "usage: lab0 [--input=FILE|--output=FILE|--dump-core|--segfault|--catch]\n");
 				exit(3);
 			default:
-				fprintf(stderr,  "don't know what's going on");
+				fprintf(stderr,  "BAD: getopt giving nonsensical answer");
 				exit(5);
 		}
 	}
-	
+
+
 	//action: write from fd 0 to 1
 	int count = 0; //how many bytes were written
 	char buffer[BUFF_SIZE];
@@ -102,7 +119,7 @@ int main(int argc, char* argv[])
 		int ammount = read(0, buffer, BUFF_SIZE);
 		if(ammount < 0)
 		{
-			fprintf(stderr, "read error");
+			fprintf(stderr, "BAD: read error");
 			exit(5);
 		}
 		else if(ammount == 0)
@@ -110,18 +127,10 @@ int main(int argc, char* argv[])
 
 		if(!write (1, buffer, ammount))
 		{
-			fprintf(stderr, "write error");
+			fprintf(stderr, "BAD: write error");
 			exit(5);
 		}
 	}
-		
-
-
-	//int size = write(1, "enhey", 3);
-	//size += write(1, "oh ho", 3);
-	//fprintf(stderr, "%d bytes written to stdout\n", size);
-
 
 	return 0;
-
 }
