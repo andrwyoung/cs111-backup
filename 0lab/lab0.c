@@ -9,6 +9,8 @@
 #include <unistd.h> //dup write read close
 #include <stdlib.h> //exit
 #include <signal.h> //signal
+#include <string.h> 
+#include <errno.h>
 #define BUFF_SIZE 100 
 
 //change fd0 (stdinn) to get from file[] instead
@@ -24,7 +26,7 @@ int chin(char file[])
 	}
 	else
 	{
-		fprintf(stderr,  "failed to open %s\n", file);
+		fprintf(stderr,  "failed to open %s: %s\n", file, strerror(errno));
 		return 1;
 	}
 }
@@ -42,7 +44,7 @@ int chout(char file[])
 	}
 	else
 	{
-		fprintf(stderr,  "failed to create %s\n", file);
+		fprintf(stderr,  "failed to create %s: %s\n", file, strerror(errno));
 		return 1;
 	}
 }
@@ -63,23 +65,37 @@ void segfault()
 
 int main(int argc, char* argv[])
 {
+	//fprintf(stderr, "%s\n", *argv);
 	int c; //return value of that option 
+	int option_index = 0;
+	static struct option long_options[] =
+	{
+		{"input", required_argument, 0, 'i'},
+		{"output", required_argument, 0, 'o'},
+		{"segfault", no_argument, 0, 's'},
+		{"catch", no_argument, 0, 'c'},
+		{"dump-core", no_argument, 0, 'd'},
+		{0, 0, 0, 0}
+	};
 
-	//looping through to check syntax first
 	while(1)
 	{
-		static struct option long_options[] =
-		{
-			{"input", required_argument, 0, 'i'},
-			{"outputY", required_argument, 0, 'o'},
-			{"segfault", no_argument, 0, 's'},
-			{"catch", no_argument, 0, 'c'},
-			{"dump-core", no_argument, 0, 'd'},
-			{0, 0, 0, 0}
-		};
-		int option_index = 0;
 		c = getopt_long(argc, argv, "i:o:scd", long_options, &option_index);
-		//fprintf(stderr, "%c\n", c);
+		if (c == -1)
+			break;
+
+		if(c == '?')
+		{
+			fprintf(stderr, "usage: lab0 [--input=FILE|--output=FILE|--dump-core|--segfault|--catch]\n");
+			exit(1);
+		}
+	}
+
+	//looping through to check syntax first
+	optind = 0;
+	while(1)
+	{
+		c = getopt_long(argc, argv, "i:o:scd", long_options, &option_index);
 		
 		if (c == -1)
 			break;
@@ -87,10 +103,10 @@ int main(int argc, char* argv[])
 		switch(c)
 		{
 			case 'i':
-				if(chin(optarg)) exit(1);
+				if(chin(optarg)) exit(2);
 				break;
 			case 'o': 
-				if(chout(optarg)) exit(2);
+				if(chout(optarg)) exit(3);
 				break;
 			case 's':
 				segfault();
@@ -102,8 +118,6 @@ int main(int argc, char* argv[])
 				signal(SIGSEGV, SIG_DFL);
 				break;
 			case '?':
-				fprintf(stderr, "usage: lab0 [--input=FILE|--output=FILE|--dump-core|--segfault|--catch]\n");
-				exit(3);
 			default:
 				fprintf(stderr,  "BAD: getopt giving nonsensical answer");
 				exit(5);

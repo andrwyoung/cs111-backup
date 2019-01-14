@@ -2,8 +2,21 @@ NAME: Andrew Yong
 EMAIL: yong.andrew11@gmail.com
 ID: 604905807
 
+Included files:
+Makefile:
+	make (or make lab0): creates executable lab0
+	make dist: creates submission tarball
+	make check: checks each option to see if no errors show up
+		checks if --input and --output redirection work
+		checks if --segfault and all it's variants work
+		then removes created files and exits
+	make clean: removes tar file and lab0 executable
+README: this file
+lab0.c: the source file for the whole shebang
+backtrace.png: the gdb backtrace picture
+breakpoint.png: the gdb breakpoint picture
 
-Sources:
+Sources I used:
 using system calls: https://www.ibm.com/developerworks/community/blogs/58e72888-6340-46ac-b488-d31aa4058e9c/entry/understanding_linux_open_system_call?lang=en
 getopt_long example: https://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html#Getopt-Long-Option-Example
 How to change signal: signals: https://jameshfisher.com/2017/01/11/c-signal-unregister.html
