@@ -12,16 +12,43 @@
 #include <unistd.h> //read and write
 #include <ctype.h> //isdigit
 
+#define FDS 3 //how many file descripors needed for command
+
 //flags
 static int verbose_flag = 0;
 static int file_flags = 0;
 
+
+//printing messages
 void printusage()
 {
 	fprintf(stderr, "remember to print usage information\n");
 }
 
+void errmess()
+{
+	fprintf(stderr, "memory allocation failure, exiting\n");
+	exit(1);
+}
 
+//check if string is int, then convert
+//-1 if not int
+int stoi(char* string)
+{
+	for(int i = 0; i < strlen(string); i++)
+	{
+		if(!isdigit(string[i]))
+			return -1;
+	}
+	return atoi(string);
+}
+
+
+
+
+
+
+//open new file with said flags
 int new_open(char file[], int flag)
 {
 	int fd = open(file, flag | file_flags);
@@ -34,21 +61,32 @@ int new_open(char file[], int flag)
 	return fd;
 }
 
+//string outputter for verbose options with 1 argument
 void stringer(char option[], char arguments[])
 {
-	// +1 space +1 newline +1 null terminator
-	char* result = malloc(strlen(option) + strlen(arguments) + 3); 
-	if(malloc < 0) fprintf(stderr, "oh my");
+	char* result = (char*)malloc(sizeof(char) * (strlen(option) + strlen(arguments) + 3));
+	if(result == NULL) errmess();
+
 
 	strcat(result, option);
 	strcat(result, " ");
 	strcat(result, arguments);
 	strcat(result, "\n");
+
 	write(1, result, strlen(result));
-	//fprintf(stderr, "%s\n", result);
 	free(result);
+	result = NULL;
 }
 
+//do the --command with correctly formatted input
+int commander(int fds[], char* cmd)
+{	
+	//go through chaging the 
+
+
+	system(cmd);
+	return 0;
+}
 
 int main(int argc, char* argv[])
 {
@@ -95,7 +133,7 @@ int main(int argc, char* argv[])
 
 	};
 	
-	// //checking if valid arguments?
+	// //checking if valid arguments? not needed. see spec: keep going even if bad argument
 	// while(1)
 	// {
 	// 	c = getopt_long(argc, argv, "", long_options, &option_index);
@@ -121,7 +159,7 @@ int main(int argc, char* argv[])
 			break;
 		// fprintf(stderr, "---c: %d, optind: %d, option_index: %d, optarg: %s\n", c, option_index, optind, optarg);
 
-		int index;
+		int index; //for --command
 		switch(c)
 		{
 			case 20: //rdonly
@@ -134,39 +172,67 @@ int main(int argc, char* argv[])
 				break;
 			case 24: //command
 				index = optind - 1;
-				int fds[3];
-				for (int i = 0; i < 3; i++)
+				int argnum = 0;
+
+				int fail = 0; //supports continuing despite bad arguments
+				int fds[FDS]; //to hold onto fds
+				char* result; //to hold onto the cmd + args
+				//this is all to get and check arguments
+				while(1)
 				{
-					char* next = strdup(argv[index]);
-					index++;
-					if (index >= argc)  
+					//end cases
+					// fprintf(stderr, "index: %d, argc: %d, argnum: %d\n", index, argc, argnum);
+					char* curr = argv[index];
+					if(index >= argc || curr[0] == '-')
 					{
-						fprintf(stderr, "not enough inputs for --command\n");
-						printusage();
+						if(argnum < FDS + 1) 
+						{
+							fprintf(stderr, "--command: at least 4 arguments required (--help for usage)\n");
+							fail = 1;
+						}
+						optind = index - 1;
 						break;
 					}
-					fds[i] = next;	
-					fprintf(stderr, "%d\n", fds[i]);
-				}
-				
-				char* arguments[] = argv[index];
-				while (index < argc)
-				{
-					char* next = strdup(argv[index]);
-					index++;
-					if(next[0] != '-')
-						
 
+					//if statment to preserve order of arguments
+					//first 3 arguments must be numbers
+					if(argnum < FDS)
+					{
+						fds[argnum] = stoi(curr);
+						if (fds[argnum] < 0)
+						{
+							fprintf(stderr, "--command: argument %d must be a number (--help for usage)\n", argnum + 1);
+							fail = 1;
+							break; //may be problem: not moving optind
+						}
+					}
+					//fourth argument is a string. so allocate it
+					else if(argnum == FDS)
+					{
+						result = malloc(strlen(curr));
+						if(result == NULL) errmess();
+						strcat(result, curr);
+					}
+					//rest of the arguments can be added onto the string
+					else
+					{
+						result = (char*)realloc(result, sizeof(int) * (strlen(curr) + strlen(result)));
+						if(result == NULL) errmess();
+						strcat(result, " ");
+						strcat(result, curr);
+					}
+					
+					//fprintf(stderr, "%s\n", curr);
+					index++;
+					argnum++;
 				}
-				//while (index < argc)
-				//{
-				//	char* next = strdup(argv[index]);
-				//	index++;
-				//	if(next[0] != '-') 
-				//		fprintf(stderr, "%s\n", next);
-				//	else break;
-				//}
-				optind = index - 1;
+				if(!fail) commander(fds, result); //now do the command
+				if(result != NULL) //free memory
+				{
+					//fprintf(stderr, "%s\n", result);
+					free(result);
+					result = NULL;
+				}
 				break;
 			case 31:
 				verbose_flag = 1;
