@@ -9,6 +9,8 @@
 #include <sys/types.h> //open
 #include <sys/stat.h> 
 #include <fcntl.h> 
+#include <unistd.h> //read and write
+#include <ctype.h> //isdigit
 
 //flags
 static int verbose_flag = 0;
@@ -28,15 +30,28 @@ int new_open(char file[], int flag)
 		fprintf(stderr, "open fail for %s: %s\n", file, strerror(errno));
 	}
 		
-	// fprintf(stderr, "opened file %s, fd: %d\n", file, fd);
+	fprintf(stderr, "opened file %s, fd: %d\n", file, fd);
 	return fd;
+}
+
+void stringer(char option[], char arguments[])
+{
+	// +1 space +1 newline +1 null terminator
+	char* result = malloc(strlen(option) + strlen(arguments) + 3); 
+	if(malloc < 0) fprintf(stderr, "oh my");
+
+	strcat(result, option);
+	strcat(result, " ");
+	strcat(result, arguments);
+	strcat(result, "\n");
+	write(1, result, strlen(result));
+	//fprintf(stderr, "%s\n", result);
+	free(result);
 }
 
 
 int main(int argc, char* argv[])
 {
-	fprintf(stderr, strcat("rdonly\n", optarg));
-
 	int c; //return value of that option
 	int option_index = 0;
 	static struct option long_options[] = 
@@ -106,18 +121,52 @@ int main(int argc, char* argv[])
 			break;
 		// fprintf(stderr, "---c: %d, optind: %d, option_index: %d, optarg: %s\n", c, option_index, optind, optarg);
 
+		int index;
 		switch(c)
 		{
 			case 20: //rdonly
-				char input[] = 
-				write()
+				if(verbose_flag) stringer("rdonly", optarg);
 				new_open(optarg, O_RDONLY);
 				break;
 			case 22: //wronly
+				if(verbose_flag) stringer("wronly", optarg);
 				new_open(optarg, O_WRONLY);
 				break;
 			case 24: //command
+				index = optind - 1;
+				int fds[3];
+				for (int i = 0; i < 3; i++)
+				{
+					char* next = strdup(argv[index]);
+					index++;
+					if (index >= argc)  
+					{
+						fprintf(stderr, "not enough inputs for --command\n");
+						printusage();
+						break;
+					}
+					fds[i] = next;	
+					fprintf(stderr, "%d\n", fds[i]);
+				}
+				
+				char* arguments[] = argv[index];
+				while (index < argc)
+				{
+					char* next = strdup(argv[index]);
+					index++;
+					if(next[0] != '-')
+						
 
+				}
+				//while (index < argc)
+				//{
+				//	char* next = strdup(argv[index]);
+				//	index++;
+				//	if(next[0] != '-') 
+				//		fprintf(stderr, "%s\n", next);
+				//	else break;
+				//}
+				optind = index - 1;
 				break;
 			case 31:
 				verbose_flag = 1;
