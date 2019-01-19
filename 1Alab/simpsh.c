@@ -4,7 +4,7 @@
 #include <stdio.h> //fprinf
 #include <getopt.h>  //getopt_long
 #include <stdlib.h>  //exit
-#include <string.h> //strerror
+#include <string.h> //strerror atoi itoa
 #include <errno.h> //errno
 #include <sys/types.h> //open
 #include <sys/stat.h> 
@@ -57,34 +57,57 @@ int new_open(char file[], int flag)
 		fprintf(stderr, "open fail for %s: %s\n", file, strerror(errno));
 	}
 		
-	fprintf(stderr, "opened file %s, fd: %d\n", file, fd);
+	//fprintf(stderr, "opened file %s, fd: %d\n", file, fd);
 	return fd;
 }
 
-//string outputter for verbose options with 1 argument
-void stringer(char option[], char arguments[])
+void stringer0(char option[])
 {
-	char* result = (char*)malloc(sizeof(char) * (strlen(option) + strlen(arguments) + 3));
-	if(result == NULL) errmess();
+	printf("--%s\n", option);
+	fflush(stdout);
+}
 
+//string outputter for verbose options with 1 argument
+void stringer1(char option[], char arguments[])
+{
+	printf("--%s %s\n", option, arguments);
+	fflush(stdout);
+}
 
-	strcat(result, option);
-	strcat(result, " ");
-	strcat(result, arguments);
-	strcat(result, "\n");
-
-	write(1, result, strlen(result));
-	free(result);
-	result = NULL;
+//string outputter for --command
+void stringer2(int fds[], char* cmd)
+{
+	printf("--command %d %d %d %s\n", fds[0], fds[1], fds[2], cmd);
+	fflush(stdout);
 }
 
 //do the --command with correctly formatted input
 int commander(int fds[], char* cmd)
 {	
-	//go through chaging the 
+	if(fork() == 0)
+	{
+		//fprintf(stderr, "pid: %d\n", getpid());
+		//fprintf(stderr, "forked!\n");
+		if(verbose_flag) stringer2(fds, cmd);
 
+		for(int i = 0; i < FDS; i++)
+		{
+			if(fds[i] != i)
+			{
+				close(i);
+				dup2(fds[i], i);
+				close(fds[i]);
+			}
+		}
+		
+		//fprintf(stdout, "output!\n");
+		//fprintf(stderr, "error!\n");
 
-	system(cmd);
+		system(cmd);
+		exit(0);
+	}
+	
+
 	return 0;
 }
 
@@ -132,23 +155,6 @@ int main(int argc, char* argv[])
 		{"help",		no_argument,		0, 40}
 
 	};
-	
-	// //checking if valid arguments? not needed. see spec: keep going even if bad argument
-	// while(1)
-	// {
-	// 	c = getopt_long(argc, argv, "", long_options, &option_index);
-	// 	if(c == -1) 
-	// 		break;
-
-	// 	if(c == '?')
-	// 	{
-	// 		printusage();
-	// 		exit(1);
-	// 	}
-	// }
-	// optind = 0;
-
-
 
 	//reading the options
 	while(1)
@@ -163,11 +169,11 @@ int main(int argc, char* argv[])
 		switch(c)
 		{
 			case 20: //rdonly
-				if(verbose_flag) stringer("rdonly", optarg);
+				if(verbose_flag) stringer1("rdonly", optarg);
 				new_open(optarg, O_RDONLY);
 				break;
 			case 22: //wronly
-				if(verbose_flag) stringer("wronly", optarg);
+				if(verbose_flag) stringer1("wronly", optarg);
 				new_open(optarg, O_WRONLY);
 				break;
 			case 24: //command
@@ -176,12 +182,12 @@ int main(int argc, char* argv[])
 
 				int fail = 0; //supports continuing despite bad arguments
 				int fds[FDS]; //to hold onto fds
-				char* result; //to hold onto the cmd + args
+				char* result = NULL; //to hold onto the cmd + args
 				//this is all to get and check arguments
 				while(1)
 				{
 					//end cases
-					// fprintf(stderr, "index: %d, argc: %d, argnum: %d\n", index, argc, argnum);
+					//fprintf(stderr, "index: %d, argc: %d, argnum: %d, optind: %d\n", index, argc, argnum, optind);
 					char* curr = argv[index];
 					if(index >= argc || curr[0] == '-')
 					{
@@ -190,7 +196,7 @@ int main(int argc, char* argv[])
 							fprintf(stderr, "--command: at least 4 arguments required (--help for usage)\n");
 							fail = 1;
 						}
-						optind = index - 1;
+						optind = index;
 						break;
 					}
 
@@ -227,23 +233,25 @@ int main(int argc, char* argv[])
 					argnum++;
 				}
 				if(!fail) commander(fds, result); //now do the command
-				if(result != NULL) //free memory
+				if(result != NULL) //free memory. just in case
 				{
-					//fprintf(stderr, "%s\n", result);
 					free(result);
 					result = NULL;
 				}
 				break;
 			case 31:
+				if(verbose_flag) stringer0("verbose");
 				verbose_flag = 1;
 				break;
 		}
 
-		// fprintf(stderr, "verbose_flag: %d\n", verbose_flag);
+		//fprintf(stderr, "verbose_flag: %d\n", verbose_flag);
+		//printf("pid: %d\n", getpid());
 	}
+	//fprintf(stderr, "argc: %d, optind: %d\n", argc, optind);
 
 
-
+	sleep(1);
 			
 	return 0;
 }
