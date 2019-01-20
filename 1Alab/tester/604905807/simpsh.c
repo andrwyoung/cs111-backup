@@ -44,6 +44,7 @@ int stoi(char* string)
 	int answer = atoi(string);
 	if(answer >= curr_fd) 
 	{
+		dprintf(3, "file descriptor too big\n");
 		exit(1);
 	}
 	return atoi(string);

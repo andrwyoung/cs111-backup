@@ -1,0 +1,1 @@
+./simpsh: unrecognized option '--bogus'

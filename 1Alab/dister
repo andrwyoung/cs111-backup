@@ -1,0 +1,11 @@
+#!/bin/bash 
+
+id=604905807
+
+make dist
+mv lab?-$id.tar.gz tester/
+if  cd tester; then
+	chmod +x ./test
+	./test $id
+	cd ..
+fi
