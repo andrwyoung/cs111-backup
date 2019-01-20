@@ -1,1 +1,1 @@
-cat: -: input file is output file
+cat: stdout: Bad file descriptor

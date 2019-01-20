@@ -39,7 +39,7 @@ then
   true
 else
   echo "No submission: lab1-$STUDENT_UID.tar.gz"
-	exit 1
+  exit 1
 fi
 
 # Untar into student's directory.
@@ -326,7 +326,7 @@ touch test13time.txt
 T13RC=$?
 sleep 1
 if [ $T13RC == 0 ] && [ ! -s test13out.txt ] && [ ! -s test13err.txt ] \
-  && grep -q "real	0m" test13time.txt
+  && grep -q "real  0m" test13time.txt
 then
   NUM_PASSED=`expr $NUM_PASSED + 1`
   echo "===>test case 13 passed"

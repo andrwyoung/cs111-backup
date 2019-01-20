@@ -44,7 +44,7 @@ int stoi(char* string)
 	int answer = atoi(string);
 	if(answer >= curr_fd) 
 	{
-		dprintf(3, "file descriptor too big\n");
+		fprintf(stderr, "hmm\n");
 		exit(1);
 	}
 	return atoi(string);
@@ -257,9 +257,6 @@ int main(int argc, char* argv[])
 		//printf("pid: %d\n", getpid());
 	}
 	//fprintf(stderr, "argc: %d, optind: %d\n", argc, optind);
-
-
-	sleep(1);
 			
 	return exit_status;
 }

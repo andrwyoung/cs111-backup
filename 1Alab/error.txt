@@ -1,2 +1,1 @@
-file descriptor too big
-rr_fd: 3
+simpsh: unrecognized option `--bogus'
