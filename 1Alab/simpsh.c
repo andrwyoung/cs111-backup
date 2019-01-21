@@ -4,33 +4,64 @@
 #include <stdio.h> //fprinf
 #include <getopt.h>  //getopt_long
 #include <stdlib.h>  //exit
-#include <string.h> //strerror atoi itoa
-#include <errno.h> //errno
 #include <sys/types.h> //open
 #include <sys/stat.h> 
 #include <fcntl.h> 
-#include <unistd.h> //read and write
+#include <string.h> //strlen
 #include <ctype.h> //isdigit
+#define FDS 3
 
-#define FDS 3 //how many file descripors needed for command
+int verbose_flag = 0; //is verbose on?
+int file_flags = 0; //file flags open()
+int curr_fd = 0;	//number of fds currently open
+int exit_status = 0;
+int* curr_fds;
 
-//flags
-static int verbose_flag = 0;
-static int file_flags = 0;
-static int curr_fd = 0;	
-static int exit_status = 0;
-
-//printing messages
-void printusage()
-{
-	fprintf(stderr, "remember to print usage information\n");
-}
+typedef struct Command {
+	int fds[FDS];
+	char** cmd;
+	int args;
+} Command;
 
 void errmess()
 {
 	fprintf(stderr, "memory allocation failure, exiting\n");
 	exit(1);
 }
+
+void stringer0(char option[])
+{
+	printf("--%s\n", option);
+	fflush(stdout);
+}
+
+//string outputter for verbose options with 1 argument
+void stringer1(const char option[], const char arguments[])
+{
+	printf("--%s %s\n", option, arguments);
+	fflush(stdout);
+}
+
+//string outputter for --command
+void stringer2(Command* gotten)
+{
+	int* fds = gotten->fds;
+	char** cmd = gotten->cmd;
+	printf("---command");
+	int i;
+	for(i = 0; i < FDS; i++)
+	{
+		printf(" %d", fds[i]);
+	}
+	for(i = 0; i < gotten->args; i++)
+	{
+		printf(" %s", cmd[i]);
+	}
+	printf("\n");
+	fflush(stdout);
+}
+
+
 
 //check if string is int, then convert
 //-1 if not int
@@ -42,87 +73,154 @@ int stoi(char* string)
 		if(!isdigit(string[i]))
 			return -1;
 	}
-	int answer = atoi(string);
-	if(answer >= curr_fd) 
-	{
-		fprintf(stderr, "hmm\n");
-		exit(1);
-	}
 	return atoi(string);
 }
 
 
 
-
-
-
 //open new file with said flags
-int new_open(char file[], int flag)
+void new_open(char file[], int flag)
 {
-	close(curr_fd);
-	curr_fd++;
 	int fd = open(file, flag | file_flags);
+
+	curr_fd++;
+	curr_fds = (int*)realloc(curr_fds, sizeof(int) * curr_fd);
+	curr_fds[curr_fd - 1] = fd;
+	
+
 	if(fd < 0)
 	{
-		fprintf(stderr, "open fail for %s: %s\n", file, strerror(errno));
-		exit(1);
+		fprintf(stderr, "open fail for %s\n", file);
+		exit_status = 1;
 	}
 	
 	//fprintf(stderr, "opened file %s, fd: %d\n", file, fd);
-	return fd;
 }
 
-void stringer0(char option[])
+
+void fd_print()
 {
-	printf("--%s\n", option);
-	fflush(stdout);
+	int i;
+	for(i = 0; i < curr_fd; i++)
+	{
+		fprintf(stderr, "%d\n", curr_fds[i]);
+	}
 }
 
-//string outputter for verbose options with 1 argument
-void stringer1(char option[], char arguments[])
+
+
+int command_parse(int argc, char* argv[], Command* answer)
 {
-	printf("--%s %s\n", option, arguments);
-	fflush(stdout);
+	int index = optind - 1;
+	int argnum = 0;
+	int cmdargnum = -FDS; //makes it easier for me
+
+	//this is all to get and check arguments
+	while(1)
+	{
+		//fprintf(stderr, "index: %d, optind: %d, argc: %d, argnum: %d, cmdargnum: %d\n", index, optind, argc, argnum, cmdargnum);
+		char* curr = argv[index];
+		if(index >= argc || (curr[0] == '-' && curr[1] == '-'))
+		{
+			if(argnum < FDS + 1) 
+			{
+				fprintf(stderr, "--command: at least 4 arguments required (--help for usage)\n");
+				return 1;
+			}
+			optind = index;
+			break;
+		}
+
+
+		//first 3 arguments must be numbers
+		if(argnum < FDS)
+		{
+			answer->fds[argnum] = stoi(curr);
+			int fd = answer->fds[argnum];
+			if(fd < 0 || fd >= curr_fd || curr_fds[fd] < 0)
+			{
+				fprintf(stderr, "invalid file descpriptor\n");
+				exit(1);
+			}
+			if (fd < 0)
+			{
+				fprintf(stderr, "--command: argument %d must be a number (--help for usage)\n", argnum + 1);
+				return 1;
+			}
+		}
+		//fourth argument is the start of the command. so allocate it
+		else if(argnum == FDS)
+		{
+			answer->cmd = (char**)malloc(sizeof(char*) * (cmdargnum + 1));
+			if(answer->cmd == NULL) errmess();
+			answer->cmd[cmdargnum] = curr;
+			//fprintf(stderr, "allocated %d memory\n", cmdargnum + 1);
+		}
+		//rest of the arguments can be added onto the string
+		else
+		{	
+			answer->cmd = (char**)realloc(answer->cmd, sizeof(char*) * (cmdargnum + 1));
+			if(answer->cmd == NULL) errmess();
+			answer->cmd[cmdargnum] = curr;
+			//fprintf(stderr, "allocated %d memory\n", cmdargnum + 1);
+		}
+		
+		//fprintf(stderr, "%s\n", curr);
+		index++;
+		argnum++;
+		cmdargnum++;
+	}
+
+	answer->cmd = (char**)realloc(answer->cmd, sizeof(char*) * cmdargnum);
+	answer->cmd[cmdargnum] = NULL;
+	answer->args = cmdargnum;
+	//fprintf(stderr, "cmdargnum: %d\n", cmdargnum);
+
+	return 0;
 }
 
-//string outputter for --command
-void stringer2(int fds[], char* cmd)
+int command_do(Command* gotten)
 {
-	printf("--command %d %d %d %s\n", fds[0], fds[1], fds[2], cmd);
-	fflush(stdout);
-}
-
-//do the --command with correctly formatted input
-int commander(int fds[], char* cmd)
-{	
 	if(fork() == 0)
 	{
-		//fprintf(stderr, "pid: %d\n", getpid());
-		//fprintf(stderr, "forked!\n");
-		if(verbose_flag) stringer2(fds, cmd);
+		if(verbose_flag) stringer2(gotten);
 
 		int i;
 		for(i = 0; i < FDS; i++)
 		{
-			dup2(fds[i], i);
+			//fprintf(stderr, "to: %d, from: %d\n", gotten->fds[i], i + 3);
+			dup2(curr_fds[gotten->fds[i]], i);
 		}
 
-	
-		//fprintf(stdout, "output!\n");
-		//fprintf(stderr, "error!\n");
+		execvp(gotten->cmd[0], gotten->cmd);
 
-		system(cmd);
-		exit(0);
+		//will continue here if execvp didn't execute
+	    fprintf(stderr, "invalid command\n");
+		exit(1);
 	}
-
 
 	return 0;
 }
+
+int command_free(Command* gotten)
+{
+	int i;
+	for(i = 0; i < gotten->args; i++)
+	{
+		fprintf(stderr, "%s\n", gotten->cmd[i]);
+	}
+	return 0;
+}
+
+
 
 int main(int argc, char* argv[])
 {
 	int c; //return value of that option
 	int option_index = 0;
+	curr_fds = (int*)malloc(sizeof(int));
+	if(curr_fds == NULL) errmess();
+
 	static struct option long_options[] = 
 	{
 		//file flags
@@ -160,7 +258,8 @@ int main(int argc, char* argv[])
 		{"pause", 		no_argument,		0, 37},
 
 		//help option
-		{"help",		no_argument,		0, 40}
+		{"help",		no_argument,		0, 40},
+		{0, 0, 0, 0,}
 
 	};
 
@@ -168,10 +267,9 @@ int main(int argc, char* argv[])
 	while(1)
 	{
 		c = getopt_long(argc, argv, "", long_options, &option_index);
-
 		if(c == -1) 
 			break;
-		// fprintf(stderr, "---c: %d, optind: %d, option_index: %d, optarg: %s\n", c, option_index, optind, optarg);
+		//fprintf(stderr, "---c: %d, optind: %d, option_index: %d, optarg: %s\n", c, option_index, optind, optarg);
 
 		int index; //for --command
 		switch(c)
@@ -185,66 +283,11 @@ int main(int argc, char* argv[])
 				new_open(optarg, O_WRONLY);
 				break;
 			case 24: //command
-				index = optind - 1;
-				int argnum = 0;
-
-				int fail = 0; //supports continuing despite bad arguments
-				int fds[FDS]; //to hold onto fds
-				char* result = NULL; //to hold onto the cmd + args
-				//this is all to get and check arguments
-				while(1)
 				{
-					//end cases
-					//fprintf(stderr, "index: %d, argc: %d, argnum: %d, optind: %d\n", index, argc, argnum, optind);
-					char* curr = argv[index];
-					if(index >= argc || curr[0] == '-')
-					{
-						if(argnum < FDS + 1) 
-						{
-							//fprintf(stderr, "--command: at least 4 arguments required (--help for usage)\n");
-							fail = 1;
-						}
-						optind = index;
-						break;
-					}
-
-					//if statment to preserve order of arguments
-					//first 3 arguments must be numbers
-					if(argnum < FDS)
-					{
-						fds[argnum] = stoi(curr);
-						if (fds[argnum] < 0)
-						{
-							//fprintf(stderr, "--command: argument %d must be a number (--help for usage)\n", argnum + 1);
-							fail = 1;
-							break; //may be problem: not moving optind
-						}
-					}
-					//fourth argument is a string. so allocate it
-					else if(argnum == FDS)
-					{
-						result = malloc(strlen(curr));
-						if(result == NULL) errmess();
-						strcat(result, curr);
-					}
-					//rest of the arguments can be added onto the string
-					else
-					{
-						result = (char*)realloc(result, sizeof(int) * (strlen(curr) + strlen(result)));
-						if(result == NULL) errmess();
-						strcat(result, " ");
-						strcat(result, curr);
-					}
-					
-					//fprintf(stderr, "%s\n", curr);
-					index++;
-					argnum++;
-				}
-				if(!fail) commander(fds, result); //now do the command
-				if(result != NULL) //free memory. just in case
-				{
-					free(result);
-					result = NULL;
+					Command gotten;
+					if(command_parse(argc, argv, &gotten)) 
+							exit(1);
+					command_do(&gotten);
 				}
 				break;
 			case 31:
@@ -252,7 +295,8 @@ int main(int argc, char* argv[])
 				verbose_flag = 1;
 				break;
 			case '?':
-				exit(1);
+				fprintf(stderr, "bad option\n");
+				exit_status = 1;
 				break;
 		}
 

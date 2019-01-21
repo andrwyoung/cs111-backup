@@ -1,1 +1,0 @@
-simpsh: invalid option -- p

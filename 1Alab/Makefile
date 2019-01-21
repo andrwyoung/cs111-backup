@@ -2,10 +2,10 @@
 # EMAIL: yong.andrew11@gmail.com
 # ID: 604905807
 
-files = simpsh2.c Makefile
+files = simpsh.c Makefile check.sh README
 id = 604905807
 
-simpsh2: simpsh2.c
+simpsh: simpsh.c
 
 .PHONY: clean
 clean:
@@ -17,6 +17,7 @@ dist:
 
 .PHONY: check
 check:
-	./check
+	chmod +x check.sh
+	./check.sh
 
 
