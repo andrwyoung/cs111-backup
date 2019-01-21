@@ -215,6 +215,11 @@ touch test8err.txt
   --command 2 0 1 wc >c8out.txt 2>&1
 T8RC=$?
 wc < a0.txt > test8outstd.txt
+echo ___________
+cat test8outstd.txt 
+echo ___________
+cat test8out.txt
+echo ___________
 sleep 1
 if [ $T8RC == 0 ] && cmp -s test8outstd.txt test8out.txt \
   && [ ! -s test8err.txt ] && [ ! -s c8out.txt ]

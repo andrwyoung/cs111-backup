@@ -2,10 +2,10 @@
 # EMAIL: yong.andrew11@gmail.com
 # ID: 604905807
 
-files = simpsh.c Makefile
+files = simpsh2.c Makefile
 id = 604905807
 
-simpsh: simpsh.c
+simpsh2: simpsh2.c
 
 .PHONY: clean
 clean:

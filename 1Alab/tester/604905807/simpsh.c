@@ -36,7 +36,8 @@ void errmess()
 //-1 if not int
 int stoi(char* string)
 {
-	for(int i = 0; i < strlen(string); i++)
+	int i;
+	for(i = 0; i < strlen(string); i++)
 	{
 		if(!isdigit(string[i]))
 			return -1;
@@ -100,7 +101,8 @@ int commander(int fds[], char* cmd)
 		//fprintf(stderr, "forked!\n");
 		if(verbose_flag) stringer2(fds, cmd);
 
-		for(int i = 0; i < FDS; i++)
+		int i;
+		for(i = 0; i < FDS; i++)
 		{
 			dup2(fds[i], i);
 		}
@@ -251,6 +253,7 @@ int main(int argc, char* argv[])
 				break;
 			case '?':
 				exit(1);
+				break;
 		}
 
 		//fprintf(stderr, "verbose_flag: %d\n", verbose_flag);

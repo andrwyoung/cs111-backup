@@ -1,1 +1,2 @@
-simpsh: unrecognized option `--bogus'
+--wronly input.txt
+d option `--bogus'
