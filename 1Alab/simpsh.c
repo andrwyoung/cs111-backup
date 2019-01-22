@@ -151,9 +151,9 @@ int command_parse(int argc, char* argv[], Command* answer)
 		//fourth argument is the start of the command. so allocate it
 		else if(argnum == FDS)
 		{
-			answer->cmd = (char**)malloc(sizeof(char*) * (cmdargnum + 1));
+			answer->cmd = (char**)malloc(sizeof(char*));
 			if(answer->cmd == NULL) errmess();
-			answer->cmd[cmdargnum] = curr;
+			answer->cmd[0] = curr;
 			//fprintf(stderr, "allocated %d memory\n", cmdargnum + 1);
 		}
 		//rest of the arguments can be added onto the string
@@ -199,6 +199,7 @@ int command_do(Command* gotten)
 		exit(1);
 	}
 
+	//free(gotten->cmd);
 	return 0;
 }
 
@@ -286,8 +287,11 @@ int main(int argc, char* argv[])
 				{
 					Command gotten;
 					if(command_parse(argc, argv, &gotten)) 
-							exit(1);
-					command_do(&gotten);
+							exit_status = 1;
+					else
+						command_do(&gotten);
+					//command_free(&gotten);
+					//free(gotten->cmd)
 				}
 				break;
 			case 31:
@@ -304,6 +308,7 @@ int main(int argc, char* argv[])
 		//printf("pid: %d\n", getpid());
 	}
 	//fprintf(stderr, "argc: %d, optind: %d\n", argc, optind);
-			
+		
+	free(curr_fds);	
 	return exit_status;
 }
