@@ -16,7 +16,7 @@ int command_parse(int argc, char* argv[], Command* answer)
 	//this is all to get and check arguments
 	while(1)
 	{
-		//fprintf(stderr, "index: %d, optind: %d, argc: %d, argnum: %d, cmdargnum: %d\n", index, optind, argc, argnum, cmdargnum);
+		//fprintf(stderr, "RM: index: %d, optind: %d, argc: %d, argnum: %d, cmdargnum: %d\n", index, optind, argc, argnum, cmdargnum);
 		char* curr = argv[index];
 		if(index >= argc || (curr[0] == '-' && curr[1] == '-'))
 		{
@@ -52,7 +52,7 @@ int command_parse(int argc, char* argv[], Command* answer)
 			answer->cmd = (char**)malloc(sizeof(char*));
 			if(answer->cmd == NULL) errmess();
 			answer->cmd[0] = curr;
-			//fprintf(stderr, "allocated %d memory\n", cmdargnum + 1);
+			//fprintf(stderr, "RM: allocated %d memory\n", cmdargnum + 1);
 		}
 		//rest of the arguments can be added onto the string
 		else
@@ -60,10 +60,10 @@ int command_parse(int argc, char* argv[], Command* answer)
 			answer->cmd = (char**)realloc(answer->cmd, sizeof(char*) * (cmdargnum + 1));
 			if(answer->cmd == NULL) errmess();
 			answer->cmd[cmdargnum] = curr;
-			//fprintf(stderr, "allocated %d memory\n", cmdargnum + 1);
+			//fprintf(stderr, "RM: allocated %d memory\n", cmdargnum + 1);
 		}
 		
-		//fprintf(stderr, "%s\n", curr);
+		//fprintf(stderr, "RM: %s\n", curr);
 		index++;
 		argnum++;
 		cmdargnum++;
@@ -72,7 +72,7 @@ int command_parse(int argc, char* argv[], Command* answer)
 	answer->cmd = (char**)realloc(answer->cmd, sizeof(char*) * cmdargnum);
 	answer->cmd[cmdargnum] = NULL;
 	answer->args = cmdargnum;
-	//fprintf(stderr, "cmdargnum: %d\n", cmdargnum);
+	//fprintf(stderr, "RM :cmdargnum: %d\n", cmdargnum);
 
 	return 0;
 }
@@ -110,3 +110,11 @@ int command_list(Command* gotten)
 	}
 	return 0;
 }
+
+
+
+int wait()
+{
+	return 0;
+}
+

@@ -11,9 +11,11 @@
 #include "printers.h"
 #include "commander.h"
 #include "filers.h"
+#include "utils.h" //max
 
 int verbose_flag = 0; //is verbose on?
 int exit_status = 0;
+int* commands; //list of commands currently running
 
 int file_flags = 0; //flags to use for open()
 int curr_fd = 0;	//number of fds currently open
@@ -128,19 +130,19 @@ int main(int argc, char* argv[])
 
 			case 20: //rdonly
 				if(verbose_flag) stringer1("rdonly", optarg);
-				new_open(optarg, O_RDONLY);
+				exit_status = max(exit_status, opener(optarg, O_RDONLY));
 				break;
 			case 21: //rdwr
 				if(verbose_flag) stringer1("rdwr", optarg);
-				new_open(optarg, O_RDWR);
+				exit_status = max(exit_status, opener(optarg, O_RDWR));
 				break;
 			case 22: //wronly
 				if(verbose_flag) stringer1("wronly", optarg);
-				new_open(optarg, O_WRONLY);
+				exit_status = max(exit_status, opener(optarg, O_WRONLY));
 				break;
 			case 23: //pipe
 				if(verbose_flag) stringer0("piper");
-				piper();
+				exit_status = max(exit_status, piper());
 				break;
 
 
@@ -152,14 +154,19 @@ int main(int argc, char* argv[])
 					else
 						command_do(&gotten);
 					//command_list(&gotten);
-					//free(gotten->cmd)
+					//free(gotten->cmd);
 				}
 				break;
-			case 35: //wait
+			case 25: //wait
+				if(verbose_flag) stringer0("wait");
 				break;
 
 
-			case 31:
+			case 30: //close 
+				if(verbose_flag) stringer1("close", optarg);
+				exit_status = max(exit_status, closer(optarg));
+				break;
+			case 31: //verbose
 				if(verbose_flag) stringer0("verbose");
 				verbose_flag = 1;
 				break;
@@ -170,6 +177,9 @@ int main(int argc, char* argv[])
 				fprintf(stderr, "bad option\n");
 				exit_status = 1;
 				break;
+
+			default:
+				fprintf(stderr, "FATAL"); //never supposed to happen
 		}
 
 		//fprintf(stderr, "verbose_flag: %d\n", verbose_flag);

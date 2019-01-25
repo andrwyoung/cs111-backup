@@ -4,10 +4,10 @@
 extern int file_flags;
 extern int curr_fd;
 extern int* curr_fds; 
-extern int exit_status;
 
-void new_open(char file[], int flag);
-void piper();
+int opener(char file[], int flag);
+int closer(char* fd);
+int piper();
 void fd_print();
 
 #endif
