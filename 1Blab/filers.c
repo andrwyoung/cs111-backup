@@ -1,29 +1,43 @@
 #include "filers.h"
 #include <stdio.h> //fprintf
 #include <stdlib.h> //realloc
+#include <unistd.h> //pipe
 #include <sys/types.h> //open
 #include <sys/stat.h>
 #include <fcntl.h>
+
 
 
 //open new file with said flags
 void new_open(char file[], int flag)
 {
 	int fd = open(file, flag | file_flags);
-	file_flags = 0;
+	file_flags = 0; //what if open failed though?
 
 	curr_fd++;
 	curr_fds = (int*)realloc(curr_fds, sizeof(int) * curr_fd);
 	curr_fds[curr_fd - 1] = fd;
-	
-
 	if(fd < 0)
 	{
 		fprintf(stderr, "open fail for %s\n", file);
 		exit_status = 1;
 	}
 	
-	//fprintf(stderr, "opened file %s, fd: %d\n", file, fd);
+	fprintf(stderr, "opened file %s, fd: %d\n", file, fd);
+}
+
+void piper()
+{
+	curr_fd += 2;
+	curr_fds = (int*)realloc(curr_fds, sizeof(int) * curr_fd);
+	if(pipe(curr_fds + curr_fd - 2) < 0)
+	{
+		fprintf(stderr, "pipe failed to open\n");
+		exit_status = 1;
+		curr_fds[curr_fd - 2] = -1;
+		curr_fds[curr_fd - 1] = -1;
+	}
+
 }
 
 void fd_print()

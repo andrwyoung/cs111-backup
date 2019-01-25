@@ -140,7 +140,7 @@ int main(int argc, char* argv[])
 				break;
 			case 23: //pipe
 				if(verbose_flag) stringer0("piper");
-				//piper();
+				piper();
 				break;
 
 
@@ -176,7 +176,7 @@ int main(int argc, char* argv[])
 		//printf("pid: %d\n", getpid());
 	}
 	//fprintf(stderr, "argc: %d, optind: %d\n", argc, optind);
-	//fd_print();
+	fd_print();
 		
 	free(curr_fds);	
 	return exit_status;
