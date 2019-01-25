@@ -1,218 +1,23 @@
 //NAME: Andrew Yong
 //EMAIL: yong.andrew11@gmail.com
 //ID: 604905807
-#include <stdio.h> //fprinf
+#include <stdio.h> //fprintf
 #include <getopt.h>  //getopt_long
-#include <stdlib.h>  //exit
-#include <sys/types.h> //open
-#include <sys/stat.h> 
-#include <fcntl.h> 
-#include <string.h> //strlen
-#include <ctype.h> //isdigit
-#define FDS 3
+#include <sys/types.h> //open+flags
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <stdlib.h> //malloc
+
+#include "printers.h"
+#include "commander.h"
+#include "filers.h"
 
 int verbose_flag = 0; //is verbose on?
-int file_flags = 0; //file flags open()
-int curr_fd = 0;	//number of fds currently open
 int exit_status = 0;
-int* curr_fds;
 
-typedef struct Command {
-	int fds[FDS];
-	char** cmd;
-	int args;
-} Command;
-
-void errmess()
-{
-	fprintf(stderr, "memory allocation failure, exiting\n");
-	exit(1);
-}
-
-void stringer0(char option[])
-{
-	printf("--%s\n", option);
-	fflush(stdout);
-}
-
-//string outputter for verbose options with 1 argument
-void stringer1(const char option[], const char arguments[])
-{
-	printf("--%s %s\n", option, arguments);
-	fflush(stdout);
-}
-
-//string outputter for --command
-void stringer2(Command* gotten)
-{
-	int* fds = gotten->fds;
-	char** cmd = gotten->cmd;
-	printf("---command");
-	int i;
-	for(i = 0; i < FDS; i++)
-	{
-		printf(" %d", fds[i]);
-	}
-	for(i = 0; i < gotten->args; i++)
-	{
-		printf(" %s", cmd[i]);
-	}
-	printf("\n");
-	fflush(stdout);
-}
-
-
-
-//check if string is int, then convert
-//-1 if not int
-int stoi(char* string)
-{
-	int i;
-	for(i = 0; i < strlen(string); i++)
-	{
-		if(!isdigit(string[i]))
-			return -1;
-	}
-	return atoi(string);
-}
-
-
-
-//open new file with said flags
-void new_open(char file[], int flag)
-{
-	int fd = open(file, flag | file_flags);
-
-	curr_fd++;
-	curr_fds = (int*)realloc(curr_fds, sizeof(int) * curr_fd);
-	curr_fds[curr_fd - 1] = fd;
-	
-
-	if(fd < 0)
-	{
-		fprintf(stderr, "open fail for %s\n", file);
-		exit_status = 1;
-	}
-	
-	//fprintf(stderr, "opened file %s, fd: %d\n", file, fd);
-}
-
-
-void fd_print()
-{
-	int i;
-	for(i = 0; i < curr_fd; i++)
-	{
-		fprintf(stderr, "%d\n", curr_fds[i]);
-	}
-}
-
-
-
-int command_parse(int argc, char* argv[], Command* answer)
-{
-	int index = optind - 1;
-	int argnum = 0;
-	int cmdargnum = -FDS; //makes it easier for me
-
-	//this is all to get and check arguments
-	while(1)
-	{
-		//fprintf(stderr, "index: %d, optind: %d, argc: %d, argnum: %d, cmdargnum: %d\n", index, optind, argc, argnum, cmdargnum);
-		char* curr = argv[index];
-		if(index >= argc || (curr[0] == '-' && curr[1] == '-'))
-		{
-			if(argnum < FDS + 1) 
-			{
-				fprintf(stderr, "--command: at least 4 arguments required (--help for usage)\n");
-				return 1;
-			}
-			optind = index;
-			break;
-		}
-
-
-		//first 3 arguments must be numbers
-		if(argnum < FDS)
-		{
-			answer->fds[argnum] = stoi(curr);
-			int fd = answer->fds[argnum];
-			if(fd < 0 || fd >= curr_fd || curr_fds[fd] < 0)
-			{
-				fprintf(stderr, "invalid file descpriptor\n");
-				exit(1);
-			}
-			if (fd < 0)
-			{
-				fprintf(stderr, "--command: argument %d must be a number (--help for usage)\n", argnum + 1);
-				return 1;
-			}
-		}
-		//fourth argument is the start of the command. so allocate it
-		else if(argnum == FDS)
-		{
-			answer->cmd = (char**)malloc(sizeof(char*));
-			if(answer->cmd == NULL) errmess();
-			answer->cmd[0] = curr;
-			//fprintf(stderr, "allocated %d memory\n", cmdargnum + 1);
-		}
-		//rest of the arguments can be added onto the string
-		else
-		{	
-			answer->cmd = (char**)realloc(answer->cmd, sizeof(char*) * (cmdargnum + 1));
-			if(answer->cmd == NULL) errmess();
-			answer->cmd[cmdargnum] = curr;
-			//fprintf(stderr, "allocated %d memory\n", cmdargnum + 1);
-		}
-		
-		//fprintf(stderr, "%s\n", curr);
-		index++;
-		argnum++;
-		cmdargnum++;
-	}
-
-	answer->cmd = (char**)realloc(answer->cmd, sizeof(char*) * cmdargnum);
-	answer->cmd[cmdargnum] = NULL;
-	answer->args = cmdargnum;
-	//fprintf(stderr, "cmdargnum: %d\n", cmdargnum);
-
-	return 0;
-}
-
-int command_do(Command* gotten)
-{
-	if(fork() == 0)
-	{
-		if(verbose_flag) stringer2(gotten);
-
-		int i;
-		for(i = 0; i < FDS; i++)
-		{
-			//fprintf(stderr, "to: %d, from: %d\n", gotten->fds[i], i + 3);
-			dup2(curr_fds[gotten->fds[i]], i);
-		}
-
-		execvp(gotten->cmd[0], gotten->cmd);
-
-		//will continue here if execvp didn't execute
-	    fprintf(stderr, "invalid command\n");
-		exit(1);
-	}
-
-	//free(gotten->cmd);
-	return 0;
-}
-
-int command_free(Command* gotten)
-{
-	int i;
-	for(i = 0; i < gotten->args; i++)
-	{
-		fprintf(stderr, "%s\n", gotten->cmd[i]);
-	}
-	return 0;
-}
-
+int file_flags = 0; //flags to use for open()
+int curr_fd = 0;	//number of fds currently open
+int* curr_fds; //current file descriptor
 
 
 int main(int argc, char* argv[])
@@ -260,7 +65,7 @@ int main(int argc, char* argv[])
 
 		//help option
 		{"help",		no_argument,		0, 40},
-		{0, 0, 0, 0,}
+		{0, 			0, 					0, 0,}
 
 	};
 
@@ -275,14 +80,70 @@ int main(int argc, char* argv[])
 		int index; //for --command
 		switch(c)
 		{
+			case 1: //append
+				if(verbose_flag) stringer0("append");
+				file_flags |= O_APPEND;
+				break;
+			case 2: //cloexec
+				if(verbose_flag) stringer0("cloexec");
+				file_flags |= O_CLOEXEC;
+				break;
+			case 3: //creat
+				if(verbose_flag) stringer0("creat");
+				file_flags |= O_CREAT;
+				break;
+			case 4: //directory
+				if(verbose_flag) stringer0("directory");
+				file_flags |= O_DIRECTORY;
+				break;
+			case 5: //dsync
+				if(verbose_flag) stringer0("dsync");
+				file_flags |= O_DSYNC;
+				break;
+			case 6: //excl
+				if(verbose_flag) stringer0("excl");
+				file_flags |= O_EXCL;
+				break;
+			case 7: //nofollow
+				if(verbose_flag) stringer0("nofollow");
+				file_flags |= O_NOFOLLOW;
+				break;
+			case 8: //nonblock
+				if(verbose_flag) stringer0("nonblock");
+				file_flags |= O_NONBLOCK;
+				break;
+			// case 9: //rsync
+			// 	if(verbose_flag) stringer0("rsync");
+			// 	file_flags |= O_RSYNC;
+			// 	break;
+			case 10: //sync
+				if(verbose_flag) stringer0("sync");
+				file_flags |= O_SYNC;
+				break;
+			case 11: //trunc
+				if(verbose_flag) stringer0("trunc");
+				file_flags |= O_TRUNC;
+				break;
+
+
 			case 20: //rdonly
 				if(verbose_flag) stringer1("rdonly", optarg);
 				new_open(optarg, O_RDONLY);
+				break;
+			case 21: //rdwr
+				if(verbose_flag) stringer1("rdwr", optarg);
+				new_open(optarg, O_RDWR);
 				break;
 			case 22: //wronly
 				if(verbose_flag) stringer1("wronly", optarg);
 				new_open(optarg, O_WRONLY);
 				break;
+			case 23: //pipe
+				if(verbose_flag) stringer0("piper");
+				//piper();
+				break;
+
+
 			case 24: //command
 				{
 					Command gotten;
@@ -290,14 +151,21 @@ int main(int argc, char* argv[])
 							exit_status = 1;
 					else
 						command_do(&gotten);
-					//command_free(&gotten);
+					//command_list(&gotten);
 					//free(gotten->cmd)
 				}
 				break;
+			case 35: //wait
+				break;
+
+
 			case 31:
 				if(verbose_flag) stringer0("verbose");
 				verbose_flag = 1;
 				break;
+
+
+
 			case '?':
 				fprintf(stderr, "bad option\n");
 				exit_status = 1;
@@ -308,6 +176,7 @@ int main(int argc, char* argv[])
 		//printf("pid: %d\n", getpid());
 	}
 	//fprintf(stderr, "argc: %d, optind: %d\n", argc, optind);
+	//fd_print();
 		
 	free(curr_fds);	
 	return exit_status;

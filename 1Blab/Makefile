@@ -2,10 +2,14 @@
 # EMAIL: yong.andrew11@gmail.com
 # ID: 604905807
 
-files = simpsh.c Makefile checker.sh README
+files = simpsh.c printers.c commander.c filers.c utils.c
+heads = printers.h commander.h filers.h utils.h
+tars = Makefile checker.sh README
 id = 604905807
+name = simpsh
 
-simpsh: simpsh.c
+$(name): $(files) $(heads)
+	gcc -o $(name) $(files)
 
 .PHONY: clean
 clean:
@@ -13,7 +17,7 @@ clean:
 
 .PHONY: dist
 dist:
-	tar -czf lab1-$(id).tar.gz $(files)
+	tar -czf lab1-$(id).tar.gz $(files) $(tars) $(heads)
 
 .PHONY: check
 check:
