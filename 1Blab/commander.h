@@ -14,6 +14,6 @@ typedef struct Command {
 int command_parse(int argc, char* argv[], Command* answer);
 int command_do(Command* gotten);
 int command_list(Command* gotten);
-int wait();
+int waiter();
 
 #endif

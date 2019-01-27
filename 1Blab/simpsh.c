@@ -11,7 +11,8 @@
 #include "printers.h"
 #include "commander.h"
 #include "filers.h"
-#include "utils.h" //max
+#include "utils.h"
+#include "signals.h"
 
 int verbose_flag = 0; //is verbose on?
 int exit_status = 0;
@@ -20,7 +21,6 @@ int* commands; //list of commands currently running
 int file_flags = 0; //flags to use for open()
 int curr_fd = 0;	//number of fds currently open
 int* curr_fds; //current file descriptor
-
 
 int main(int argc, char* argv[])
 {
@@ -36,11 +36,11 @@ int main(int argc, char* argv[])
 		{"append",	 	no_argument,		0, 1},
 		{"cloexec",	 	no_argument,		0, 2},
 		{"creat",	 	no_argument,		0, 3},
-		{"directory",	no_argument,		0, 4},
+		{"directory",		no_argument,		0, 4},
 		{"dsync",	 	no_argument,		0, 5},
 		{"excl",	 	no_argument,		0, 6},
-		{"nofollow",	no_argument,		0, 7},
-		{"nonblock",	no_argument,		0, 8},
+		{"nofollow",		no_argument,		0, 7},
+		{"nonblock",		no_argument,		0, 8},
 		{"rsync",	 	no_argument,		0, 9},
 		{"sync",	 	no_argument,		0, 10},
 		{"trunc",	 	no_argument,		0, 11},
@@ -57,17 +57,17 @@ int main(int argc, char* argv[])
 
 		//miscellaneous options
 		{"close", 		required_argument,	0, 30},
-		{"verbose", 	no_argument,		0, 31},
-		{"profile", 	no_argument,		0, 32},
+		{"verbose", 		no_argument,		0, 31},
+		{"profile", 		no_argument,		0, 32},
 		{"abort", 		no_argument,		0, 33},
 		{"catch", 		required_argument,	0, 34},
 		{"ignore", 		required_argument,	0, 35},
-		{"default", 	required_argument,	0, 36},
+		{"default", 		required_argument,	0, 36},
 		{"pause", 		no_argument,		0, 37},
 
 		//help option
 		{"help",		no_argument,		0, 40},
-		{0, 			0, 					0, 0,}
+		{0, 			0, 			0, 0,}
 
 	};
 
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
 				exit_status = max(exit_status, opener(optarg, O_WRONLY));
 				break;
 			case 23: //pipe
-				if(verbose_flag) stringer0("piper");
+				if(verbose_flag) stringer0("pipe");
 				exit_status = max(exit_status, piper());
 				break;
 
@@ -154,15 +154,16 @@ int main(int argc, char* argv[])
 					else
 						command_do(&gotten);
 					//command_list(&gotten);
-					//free(gotten->cmd);
+					free(gotten.cmd);
 				}
 				break;
 			case 25: //wait
 				if(verbose_flag) stringer0("wait");
+				waiter();
 				break;
 
 
-			case 30: //close 
+			case 30: //close N
 				if(verbose_flag) stringer1("close", optarg);
 				exit_status = max(exit_status, closer(optarg));
 				break;
@@ -170,8 +171,31 @@ int main(int argc, char* argv[])
 				if(verbose_flag) stringer0("verbose");
 				verbose_flag = 1;
 				break;
+		
 
+			case 33: //abort
+				if(verbose_flag) stringer0("abort");
+				aborter();
+				break;
+			case 34: //catch N
+				if(stoi(optarg) < 0) break;
+				if(verbose_flag) stringer1("catch", optarg);
+				
+				break;
+			case 35: //ignore N
+				if(stoi(optarg) < 0) break;
+				if(verbose_flag) stringer1("ignore", optarg);
+				
+				break;
+			case 36: //default N
+				if(stoi(optarg) < 0) break;
+				if(verbose_flag) stringer1("default", optarg);
+				
+				break;
+			case 37: //pause
+				if(verbose_flag) stringer0("pause");
 
+				break;
 
 			case '?':
 				fprintf(stderr, "bad option\n");
@@ -191,3 +215,4 @@ int main(int argc, char* argv[])
 	free(curr_fds);	
 	return exit_status;
 }
+

@@ -2,8 +2,8 @@
 # EMAIL: yong.andrew11@gmail.com
 # ID: 604905807
 
-files = simpsh.c printers.c commander.c filers.c utils.c
-heads = printers.h commander.h filers.h utils.h
+files = simpsh.c printers.c commander.c filers.c utils.c signals.c
+heads = printers.h commander.h filers.h utils.h signals.h
 tars = Makefile checker.sh README
 id = 604905807
 name = simpsh

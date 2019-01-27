@@ -41,5 +41,5 @@ else
 	echo "FAIL check 4"
 fi
 
-rm input.txt output.txt error.txt
+#rm input.txt output.txt error.txt
 

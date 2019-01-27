@@ -23,7 +23,7 @@ int opener(char file[], int flag)
 		fprintf(stderr, "open fail for %s\n", file);
 		return 1;
 	}
-	fprintf(stderr, "RM: opened file %s, fd: %d\n", file, fd);
+	//fprintf(stderr, "RM: opened file %s, fd: %d\n", file, fd);
 	return 0;
 }
 
@@ -66,6 +66,6 @@ void fd_print()
 	int i;
 	for(i = 0; i < curr_fd; i++)
 	{
-		fprintf(stderr, "%d\n", curr_fds[i]);
+		fprintf(stderr, "RM: curr_fd[%d] = %d\n", i, curr_fds[i]);
 	}
 }

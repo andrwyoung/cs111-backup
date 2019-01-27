@@ -1,18 +1,22 @@
-Makefile
-README
-checker.sh
-commander.c
-commander.h
-dister.sh
-error.txt
-filers.c
-filers.h
-input.txt
-output.txt
-printers.c
-printers.h
-simpsh
-simpsh.c
-tester
-utils.c
-utils.h
+total 216
+-rw-r--r--@ 1 andrwyoung  staff    477 Jan 24 16:37 Makefile
+-rw-r--r--@ 1 andrwyoung  staff    542 Jan 24 16:39 README
+-rw-r--r--  1 andrwyoung  staff  17073 Jan 26 12:54 Session.vim
+-rwxr-xr-x@ 1 andrwyoung  staff    929 Jan 25 15:36 checker.sh
+-rw-r--r--  1 andrwyoung  staff   3067 Jan 26 17:09 commander.c
+-rw-r--r--@ 1 andrwyoung  staff    330 Jan 24 17:50 commander.h
+-rwxr-xr-x@ 1 andrwyoung  staff    135 Jan 23 20:13 dister.sh
+-rw-r--r--@ 1 andrwyoung  staff      0 Jan 25 15:37 error.txt
+-rw-r--r--  1 andrwyoung  staff   1363 Jan 26 13:53 filers.c
+-rw-r--r--@ 1 andrwyoung  staff    196 Jan 24 17:21 filers.h
+-rw-r--r--  1 andrwyoung  staff     22 Jan 25 15:36 input.txt
+-rw-r--r--@ 1 andrwyoung  staff   1305 Jan 26 17:15 output.txt
+-rw-r--r--@ 1 andrwyoung  staff    677 Jan 24 16:25 printers.c
+-rw-r--r--@ 1 andrwyoung  staff    226 Jan 24 16:25 printers.h
+-rw-r--r--  1 andrwyoung  staff     39 Jan 26 13:54 signals.c
+-rw-r--r--@ 1 andrwyoung  staff     59 Jan 26 13:44 signals.h
+-rwxr-xr-x  1 andrwyoung  staff  14328 Jan 26 17:13 simpsh
+-rw-r--r--  1 andrwyoung  staff   4841 Jan 26 17:13 simpsh.c
+drwxr-xr-x  6 andrwyoung  staff    192 Jan 25 15:07 tester
+-rw-r--r--@ 1 andrwyoung  staff    361 Jan 24 17:26 utils.c
+-rw-r--r--@ 1 andrwyoung  staff     88 Jan 24 17:24 utils.h

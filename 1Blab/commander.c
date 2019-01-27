@@ -52,7 +52,7 @@ int command_parse(int argc, char* argv[], Command* answer)
 			answer->cmd = (char**)malloc(sizeof(char*));
 			if(answer->cmd == NULL) errmess();
 			answer->cmd[0] = curr;
-			//fprintf(stderr, "RM: allocated %d memory\n", cmdargnum + 1);
+			//fprintf(stderr, "RM: allocated %d memory, and put %s into cmd[%d]\n", cmdargnum + 1, curr, cmdargnum);
 		}
 		//rest of the arguments can be added onto the string
 		else
@@ -60,7 +60,7 @@ int command_parse(int argc, char* argv[], Command* answer)
 			answer->cmd = (char**)realloc(answer->cmd, sizeof(char*) * (cmdargnum + 1));
 			if(answer->cmd == NULL) errmess();
 			answer->cmd[cmdargnum] = curr;
-			//fprintf(stderr, "RM: allocated %d memory\n", cmdargnum + 1);
+			//fprintf(stderr, "RM: allocated %d memory, and put %s into cmd[%d]\n", cmdargnum + 1, curr, cmdargnum);
 		}
 		
 		//fprintf(stderr, "RM: %s\n", curr);
@@ -69,7 +69,7 @@ int command_parse(int argc, char* argv[], Command* answer)
 		cmdargnum++;
 	}
 
-	answer->cmd = (char**)realloc(answer->cmd, sizeof(char*) * cmdargnum);
+	answer->cmd = (char**)realloc(answer->cmd, sizeof(char*) * cmdargnum + 1);
 	answer->cmd[cmdargnum] = NULL;
 	answer->args = cmdargnum;
 	//fprintf(stderr, "RM :cmdargnum: %d\n", cmdargnum);
@@ -84,10 +84,17 @@ int command_do(Command* gotten)
 		if(verbose_flag) stringer2(gotten->fds, gotten->cmd, gotten->args);
 
 		int i;
+		//change the fds to stdin, stdout and stderr
 		for(i = 0; i < FDS; i++)
 		{
 			//fprintf(stderr, "to: %d, from: %d\n", gotten->fds[i], i + 3);
 			dup2(curr_fds[gotten->fds[i]], i);
+		}
+		//close everything else
+		for(i = 0; i < curr_fd; i++)
+		{
+			//fprintf(stderr, "curr_fds: %d, closing: %d\n", curr_fd, i);
+			close(curr_fds[i]);
 		}
 
 		execvp(gotten->cmd[0], gotten->cmd);
@@ -104,17 +111,32 @@ int command_do(Command* gotten)
 int command_list(Command* gotten)
 {
 	int i;
-	for(i = 0; i < gotten->args; i++)
+	for(i = 0; i < gotten->args + 1; i++)
 	{
-		fprintf(stderr, "%s\n", gotten->cmd[i]);
+		fprintf(stderr, "RM: cmd[%d] = %s\n", i, gotten->cmd[i]);
 	}
 	return 0;
 }
 
 
 
-int wait()
+int waiter()
 {
+	int status;
+
+	int i;
+	while(1)
+	{
+		int pid = wait(&status);
+		if(pid < 0)
+		{
+			fprintf(stderr, "going out now\n");
+			break;
+		}
+		
+		fprintf(stderr, "status: %d, pid: %d\n", status, pid);
+	}
+	//fprintf(stderr, "Done\n");
 	return 0;
 }
 
