@@ -4,7 +4,7 @@
 void errmess();
 void stringer0(char option[]);
 void stringer1(const char option[], const char arguments[]);
-void stringer2(int* fds, char** cmd, int args);
+void stringer2(char** cmd, int args);
 int stoi(char* string);
 
 #endif

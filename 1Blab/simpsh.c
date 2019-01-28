@@ -7,6 +7,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdlib.h> //malloc
+#include <unistd.h>
+#include <signal.h>
 
 #include "printers.h"
 #include "commander.h"
@@ -22,11 +24,16 @@ int file_flags = 0; //flags to use for open()
 int curr_fd = 0;	//number of fds currently open
 int* curr_fds; //current file descriptor
 
+int num_proc = 0;
+Command* curr_proc;
+
 int main(int argc, char* argv[])
 {
 	int c; //return value of that option
 	int option_index = 0;
 	curr_fds = (int*)malloc(sizeof(int));
+	if(curr_fds == NULL) errmess();
+	curr_proc = (Command*)malloc(sizeof(Command));
 	if(curr_fds == NULL) errmess();
 
 	static struct option long_options[] = 
@@ -114,10 +121,10 @@ int main(int argc, char* argv[])
 				if(verbose_flag) stringer0("nonblock");
 				file_flags |= O_NONBLOCK;
 				break;
-			// case 9: //rsync
-			// 	if(verbose_flag) stringer0("rsync");
-			// 	file_flags |= O_RSYNC;
-			// 	break;
+			//case 9: //rsync
+			//	if(verbose_flag) stringer0("rsync");
+			//	file_flags |= O_RSYNC;
+			//	break;
 			case 10: //sync
 				if(verbose_flag) stringer0("sync");
 				file_flags |= O_SYNC;
@@ -150,16 +157,17 @@ int main(int argc, char* argv[])
 				{
 					Command gotten;
 					if(command_parse(argc, argv, &gotten)) 
-							exit_status = 1;
+						exit_status = 1;
 					else
 						command_do(&gotten);
 					//command_list(&gotten);
-					free(gotten.cmd);
+					//command_free();
 				}
 				break;
 			case 25: //wait
 				if(verbose_flag) stringer0("wait");
-				waiter();
+				exit_status = max(exit_status, waiter());
+				//fprintf(stderr, "status: %d\n", exit_status);
 				break;
 
 
@@ -177,29 +185,41 @@ int main(int argc, char* argv[])
 				if(verbose_flag) stringer0("abort");
 				aborter();
 				break;
+
+
+
 			case 34: //catch N
-				if(stoi(optarg) < 0) break;
 				if(verbose_flag) stringer1("catch", optarg);
-				
+				{
+					int num = stoi(optarg);
+					if(num < 0) break;
+					signal(num, catcher);
+				}
 				break;
 			case 35: //ignore N
-				if(stoi(optarg) < 0) break;
 				if(verbose_flag) stringer1("ignore", optarg);
-				
+				{
+					int num = stoi(optarg);
+					if(num < 0) break;
+					signal(num, SIG_IGN);
+				}
 				break;
 			case 36: //default N
-				if(stoi(optarg) < 0) break;
 				if(verbose_flag) stringer1("default", optarg);
-				
+				{
+					int num = stoi(optarg);
+					if(num < 0) break;
+					signal(num, SIG_DFL);
+				}
 				break;
 			case 37: //pause
 				if(verbose_flag) stringer0("pause");
-
+				pause();
 				break;
 
 			case '?':
 				fprintf(stderr, "bad option\n");
-				exit_status = 1;
+				exit_status = max(exit_status, 1);
 				break;
 
 			default:
@@ -210,9 +230,13 @@ int main(int argc, char* argv[])
 		//printf("pid: %d\n", getpid());
 	}
 	//fprintf(stderr, "argc: %d, optind: %d\n", argc, optind);
-	fd_print();
-		
+	//fd_print();
+	command_free();	
 	free(curr_fds);	
+	if(exit_status >= 128)
+	{
+		signal(exit_status - 128, SIG_DFL);
+		raise(exit_status - 128);
+	}
 	return exit_status;
 }
-

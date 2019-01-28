@@ -2,7 +2,7 @@
 #include <stdlib.h> //atoi
 #include <string.h> //strlen
 #include <ctype.h> //isdigit
-#include <stdio.h> //fprintf
+#include <stdio.h>
 
 //check if string is nonnegative int, then convert
 //-1 if not int

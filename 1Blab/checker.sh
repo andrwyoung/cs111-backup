@@ -25,7 +25,7 @@ else
 fi
 
 # test 3: do a simple command
-./simpsh --rdonly input.txt --wronly output.txt --wronly error.txt --command 0 1 2 cat
+./simpsh --rdonly input.txt --wronly output.txt --wronly error.txt --command 0 1 2 cat --wait
 if [ "$?" -eq 0 ] && cmp -s output.txt input.txt; then
 	echo "OK check 3"
 else
@@ -33,13 +33,12 @@ else
 fi
 
 # test 4: bad command
-./simpsh --rdonly input.txt --wronly output.txt --wronly error.txt --command 0 1 2 cattftf
-sleep 1 
+./simpsh --rdonly input.txt --wronly output.txt --wronly error.txt --command 0 1 2 cattftf --wait
 if [ -s error.txt ]; then
 	echo "OK check 4"
 else
 	echo "FAIL check 4"
 fi
 
-#rm input.txt output.txt error.txt
+rm input.txt output.txt error.txt
 

@@ -12,7 +12,7 @@
 //open new file with said flags
 int opener(char file[], int flag)
 {
-	int fd = open(file, flag | file_flags);
+	int fd = open(file, flag | file_flags, 0644);
 	file_flags = 0; //what if open failed though?
 
 	curr_fd++;
@@ -42,7 +42,7 @@ int closer(char* string)
 		return 1;
 	}
 
-	fprintf(stderr, "RM: closed fd %d\n", fd);
+	//fprintf(stderr, "RM: closed fd %d\n", fd);
 	curr_fds[fd] = -1;
 	return 0;
 }

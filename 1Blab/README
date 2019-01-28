@@ -3,10 +3,6 @@ EMAIL: yong.andrew11@gmail.com
 ID: 604905807
 
 Limits of code:
-cannot do short options
-doesn't wait for other processes to finish
-can't take into account closed files
-memory leaks man...
 
 Sources:
 parsing multiple commands: https://stackoverflow.com/questions/15466782/parsing-command-line-options-with-multiple-arguments-getopt/15467257

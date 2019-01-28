@@ -24,14 +24,9 @@ void stringer1(const char option[], const char arguments[])
 }
 
 //string outputter for --command
-void stringer2(int* fds, char** cmd, int args)
+void stringer2(char** cmd, int args)
 {
-	printf("---command");
 	int i;
-	for(i = 0; i < 3; i++)
-	{
-		printf(" %d", fds[i]);
-	}
 	for(i = 0; i < args; i++)
 	{
 		printf(" %s", cmd[i]);

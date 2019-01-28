@@ -1,0 +1,3 @@
+exit 2560 bash -c exit 10
+exit 5120 bash -c exit 20
+exit 3840 bash -c exit 15

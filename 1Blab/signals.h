@@ -2,5 +2,6 @@
 #define SIGNALS_H
 
 void aborter();
+void catcher();
 
 #endif
