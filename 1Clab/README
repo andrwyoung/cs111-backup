@@ -1,0 +1,10 @@
+NAME: Andrew Yong
+EMAIL: yong.andrew11@gmail.com
+ID: 604905807
+
+Limits of code:
+
+Sources:
+parsing multiple commands: https://stackoverflow.com/questions/15466782/parsing-command-line-options-with-multiple-arguments-getopt/15467257
+converting string to int: https://stackoverflow.com/questions/7021725/how-to-convert-a-string-to-integer-in-c
+using execvp: https://stackoverflow.com/questions/27541910/how-to-use-execvp
