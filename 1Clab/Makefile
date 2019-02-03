@@ -17,7 +17,7 @@ clean:
 
 .PHONY: dist
 dist:
-	tar -czf lab1-$(id).tar.gz $(files) $(tars) $(heads)
+	tar -czf lab1-$(id).tar.gz $(files) $(tars) $(heads) report.pdf
 
 .PHONY: check
 check:

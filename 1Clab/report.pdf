@@ -7,8 +7,35 @@ times bash -c '(cat <pg98.txt | grep -n history | wc) 2>Aerr >Aout'
 times dash -c '(cat <pg98.txt | grep -n history | wc) 2>Aerr >Aout'
 	0m0.190s 0m0.107s
 	0m0.683s 0m0.479s
-./simpsh --rdonly pg98.txt --creat --wronly Aout --creat --wronly Aerr --pipe --pipe --command 0 4 2 cat \
+./simpsh --profile --rdonly pg98.txt --creat --wronly Aout --creat --wronly Aerr --pipe --pipe --command 0 4 2 cat \
 --command 3 6 2 grep -n history --close 3 --close 4 --command 5 1 2 wc --close 5 --close 6 --wait 
+	parent	 	user: 0s 0us	system: 0s 1820us
+	children 	user: 0s 2717us	system: 0s 4310us
+
+
 
 Test case 2:
-bash (cat
+times bash -c '(head -n 20 2>Berr <pg98.txt | sort 2>>Berr | tail) >Bout'
+	0m0.230s 0m0.135s
+	0m9.137s 0m2.471s
+times dash -c '(head -n 20 2>Berr <pg98.txt | sort 2>>Berr | tail) >Bout'
+	0m0.224s 0m0.132s
+	0m9.137s 0m2.471s
+./simpsh --profile --rdonly pg98.txt --creat --wronly Bout --creat --wronly Berr --pipe --pipe \
+--command 0 4 2 head -n 20 --command 3 6 2 sort --close 3 --close 4 --command 5 1 2 tail --close 5 --close 6 --wait
+	parent		user: 0s 0us system: 0s 1548us
+	children	user: 0s 0us system: 0s 3628us
+
+
+Test case 3:
+times bash '(cat <pg98.txt | awk '{print $1}' | sed -n '/e/p' | sort -u | wc) >Cout 2>Cerr'
+	0m0.217s 0m0.084s
+	0m0.326s 0m0.204s
+times dash '(cat <pg98.txt | awk '{print $1}' | sed -n '/e/p' | sort -u | wc) >Cout 2>Cerr'
+	0m0.207s 0m0.084s
+	0m0.326s 0m0.204s
+./simpsh --profile --rdonly pg98.txt --creat --wronly Cout --creat --wronly Cerr --pipe --pipe --pipe --pipe \
+--command 0 4 2 cat --command 3 6 2 awk '{print $1}' --close 3 --close 4 --command 5 8 2 sed -n '/e/p' \
+--close 5 --close 6 --command 7 10 2 sort -u --close 7 --close 8 --command 9 1 2 wc --close 9 --close 10 --wait
+	parent		user: 0s 1221us system: 0s 789us
+	children	user: 0s 29898us system: 0s 6667us

@@ -140,12 +140,12 @@ int main(int argc, char* argv[])
 				file_flags |= O_NONBLOCK;
 				if(profile_flag) profiler_end("nonblock");
 				break;
-			//case 9: //rsync
-			//	if(verbose_flag) stringer0("rsync");
-			//	if(profile_flag) profiler_start();
-			//	file_flags |= O_RSYNC;
-			//	if(profile_flag) profiler_end("rsync");
-			//	break;
+			case 9: //rsync
+				if(verbose_flag) stringer0("rsync");
+				if(profile_flag) profiler_start();
+				file_flags |= O_RSYNC;
+				if(profile_flag) profiler_end("rsync");
+				break;
 			case 10: //sync
 				if(verbose_flag) stringer0("sync");
 				if(profile_flag) profiler_start();
