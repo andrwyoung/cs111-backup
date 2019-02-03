@@ -1,0 +1,14 @@
+Using the page 98 provided in the spec
+
+Test case 1:
+times bash -c '(cat <pg98.txt | grep -n history | wc) 2>Aerr >Aout'
+	0m0.188s 0m0.106s
+	0m0.683s 0m0.479s
+times dash -c '(cat <pg98.txt | grep -n history | wc) 2>Aerr >Aout'
+	0m0.190s 0m0.107s
+	0m0.683s 0m0.479s
+./simpsh --rdonly pg98.txt --creat --wronly Aout --creat --wronly Aerr --pipe --pipe --command 0 4 2 cat \
+--command 3 6 2 grep -n history --close 3 --close 4 --command 5 1 2 wc --close 5 --close 6 --wait 
+
+Test case 2:
+bash (cat

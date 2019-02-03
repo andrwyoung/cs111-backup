@@ -3,7 +3,6 @@
 
 extern int curr_fd;
 extern int* curr_fds;
-extern int verbose_flag;
 extern int num_proc;
 typedef struct Command {
 	int fds[3];

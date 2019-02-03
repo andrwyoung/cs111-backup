@@ -15,13 +15,16 @@
 #include "filers.h"
 #include "utils.h"
 #include "signals.h"
+#include "profiler.h"
 
 int verbose_flag = 0; //is verbose on?
+int profile_flag = 0;
+
 int exit_status = 0;
 int* commands; //list of commands currently running
 
 int file_flags = 0; //flags to use for open()
-int curr_fd = 0;	//number of fds currently open
+int curr_fd = 0; //number of fds currently open
 int* curr_fds; //current file descriptor
 
 int num_proc = 0;
@@ -91,65 +94,95 @@ int main(int argc, char* argv[])
 		{
 			case 1: //append
 				if(verbose_flag) stringer0("append");
+				if(profile_flag) profiler_start();
 				file_flags |= O_APPEND;
+				if(profile_flag) profiler_end("append");
 				break;
 			case 2: //cloexec
 				if(verbose_flag) stringer0("cloexec");
+				if(profile_flag) profiler_start();
 				file_flags |= O_CLOEXEC;
+				if(profile_flag) profiler_end("cloexec");
 				break;
 			case 3: //creat
 				if(verbose_flag) stringer0("creat");
+				if(profile_flag) profiler_start();
 				file_flags |= O_CREAT;
+				if(profile_flag) profiler_end("creat");
 				break;
 			case 4: //directory
 				if(verbose_flag) stringer0("directory");
+				if(profile_flag) profiler_start();
 				file_flags |= O_DIRECTORY;
+				if(profile_flag) profiler_end("directory");
 				break;
 			case 5: //dsync
 				if(verbose_flag) stringer0("dsync");
+				if(profile_flag) profiler_start();
 				file_flags |= O_DSYNC;
+				if(profile_flag) profiler_end("dsync");
 				break;
 			case 6: //excl
 				if(verbose_flag) stringer0("excl");
+				if(profile_flag) profiler_start();
 				file_flags |= O_EXCL;
+				if(profile_flag) profiler_end("excl");
 				break;
 			case 7: //nofollow
 				if(verbose_flag) stringer0("nofollow");
+				if(profile_flag) profiler_start();
 				file_flags |= O_NOFOLLOW;
+				if(profile_flag) profiler_end("nofollow");
 				break;
 			case 8: //nonblock
 				if(verbose_flag) stringer0("nonblock");
+				if(profile_flag) profiler_start();
 				file_flags |= O_NONBLOCK;
+				if(profile_flag) profiler_end("nonblock");
 				break;
-			case 9: //rsync
-				if(verbose_flag) stringer0("rsync");
-				file_flags |= O_RSYNC;
-				break;
+			//case 9: //rsync
+			//	if(verbose_flag) stringer0("rsync");
+			//	if(profile_flag) profiler_start();
+			//	file_flags |= O_RSYNC;
+			//	if(profile_flag) profiler_end("rsync");
+			//	break;
 			case 10: //sync
 				if(verbose_flag) stringer0("sync");
+				if(profile_flag) profiler_start();
 				file_flags |= O_SYNC;
+				if(profile_flag) profiler_end("sync");
 				break;
 			case 11: //trunc
 				if(verbose_flag) stringer0("trunc");
+				if(profile_flag) profiler_start();
 				file_flags |= O_TRUNC;
+				if(profile_flag) profiler_end("trunc");
 				break;
 
 
 			case 20: //rdonly
 				if(verbose_flag) stringer1("rdonly", optarg);
+				if(profile_flag) profiler_start();
 				exit_status = max(exit_status, opener(optarg, O_RDONLY));
+				if(profile_flag) profiler_end("rdonly");
 				break;
 			case 21: //rdwr
 				if(verbose_flag) stringer1("rdwr", optarg);
+				if(profile_flag) profiler_start();
 				exit_status = max(exit_status, opener(optarg, O_RDWR));
+				if(profile_flag) profiler_end("rdwr");
 				break;
 			case 22: //wronly
 				if(verbose_flag) stringer1("wronly", optarg);
+				if(profile_flag) profiler_start();
 				exit_status = max(exit_status, opener(optarg, O_WRONLY));
+				if(profile_flag) profiler_end("wronly");
 				break;
 			case 23: //pipe
 				if(verbose_flag) stringer0("pipe");
+				if(profile_flag) profiler_start();
 				exit_status = max(exit_status, piper());
+				if(profile_flag) profiler_end("pipe");
 				break;
 
 
@@ -159,62 +192,107 @@ int main(int argc, char* argv[])
 					if(command_parse(argc, argv, &gotten)) 
 						exit_status = 1;
 					else
+					{
+						if(verbose_flag) 
+						{
+							printf("--command");
+							int i;
+							for(i = 0; i < 3; i++)
+								printf(" %d", gotten.fds[i]);
+							stringer2(gotten.cmd, gotten.args);
+						}
+						if(profile_flag) profiler_start();
 						command_do(&gotten);
+						if(profile_flag) profiler_end("command");
+					}
 					//command_list(&gotten);
 					//command_free();
 				}
 				break;
 			case 25: //wait
 				if(verbose_flag) stringer0("wait");
+				if(profile_flag) 
+				{
+					profiler_start();
+				}	
 				exit_status = max(exit_status, waiter());
 				//fprintf(stderr, "status: %d\n", exit_status);
+				if(profile_flag) 
+				{
+					struct rusage usage;
+					getrusage(RUSAGE_CHILDREN, &usage);
+					
+					printf("children\t");
+					printf("user: %lds %dus ", usage.ru_utime.tv_sec, usage.ru_utime.tv_usec);
+					printf("system: %lds %dus\n", usage.ru_stime.tv_sec, usage.ru_stime.tv_usec);
+					fflush(stdout);
+					profiler_end("wait");
+				}
 				break;
 
 
 			case 30: //close N
 				if(verbose_flag) stringer1("close", optarg);
+				if(profile_flag) profiler_start();
 				exit_status = max(exit_status, closer(optarg));
+				if(profile_flag) profiler_end("close");
 				break;
 			case 31: //verbose
 				if(verbose_flag) stringer0("verbose");
+				if(profile_flag) profiler_start();
 				verbose_flag = 1;
+				if(profile_flag) profiler_end("verbose");
 				break;
 		
-
+			case 32: //profile
+				if(verbose_flag) stringer0("profile");
+				if(profile_flag) profiler_start();
+				if(profile_flag) profiler_end("profile");
+				profile_flag = 1;
+				break;
+			
+			
 			case 33: //abort
 				if(verbose_flag) stringer0("abort");
+				if(profile_flag) profiler_start();
 				aborter();
+				if(profile_flag) profiler_end("abort");
 				break;
-
-
-
 			case 34: //catch N
 				if(verbose_flag) stringer1("catch", optarg);
+				if(profile_flag) profiler_start();
 				{
 					int num = stoi(optarg);
 					if(num < 0) break;
 					signal(num, catcher);
 				}
+				if(profile_flag) profiler_end("catch");
 				break;
 			case 35: //ignore N
 				if(verbose_flag) stringer1("ignore", optarg);
+				if(profile_flag) profiler_start();
 				{
 					int num = stoi(optarg);
 					if(num < 0) break;
 					signal(num, SIG_IGN);
 				}
+				if(profile_flag) profiler_end("ignore");
 				break;
 			case 36: //default N
 				if(verbose_flag) stringer1("default", optarg);
+				if(profile_flag) profiler_start();
 				{
 					int num = stoi(optarg);
 					if(num < 0) break;
 					signal(num, SIG_DFL);
 				}
+				if(profile_flag) profiler_end("default");
 				break;
 			case 37: //pause
 				if(verbose_flag) stringer0("pause");
+				if(profile_flag) profiler_start();
 				pause();
+				if(profile_flag) profiler_end("pause");
 				break;
 
 			case '?':

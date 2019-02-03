@@ -82,16 +82,6 @@ int command_parse(int argc, char* argv[], Command* answer)
 
 int command_do(Command* gotten)
 {
-	if(verbose_flag) 
-	{
-		printf("--command");
-		int i;
-		for(i = 0; i < 3; i++)
-		{
-			printf(" %d", gotten->fds[i]);
-		}
-		stringer2(gotten->cmd, gotten->args);
-	}
 	int pid = fork();
 	if(pid == 0)
 	{
