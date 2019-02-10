@@ -8,6 +8,11 @@
 
 #include "utils.h"
 
+struct arg_struct {
+	long long* pointer;
+	long long value;
+};
+
 void add(long long* pointer, long long value)
 {
 	fprintf(stderr, "1\n");
@@ -71,6 +76,17 @@ int main(int argc, char* argv[])
 			default:
 				fprintf(stderr, "FATAL\n"); //never supposed to happend
 		}
+	}
+
+	//running the threads now
+	pthread_t threadids[num_iterations];
+	long long sum = 0;
+	long long value = 1;
+	
+	int i;
+	for(i = 0; i < num_threads; i++)
+	{
+		
 	}
 
 	//final printing
