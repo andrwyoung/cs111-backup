@@ -1,2 +1,2 @@
-*lab/tester
-*lab/plotter/*.gp
+**/tester/*.sh
+**/plotter/*.gp
