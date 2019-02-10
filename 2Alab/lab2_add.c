@@ -55,7 +55,6 @@ int main(int argc, char* argv[])
 		exit (2);
 	}
 	//long long counter = 0;
-	char* name = "add-none";
 
 	int c;
 	int option_index = 0;
@@ -85,7 +84,7 @@ int main(int argc, char* argv[])
 						fprintf(stderr, "input for --threads not a number\n");
 						exit(1);
 					}
-					fprintf(stderr, "RM: %s threads\n", optarg);
+					//fprintf(stderr, "RM: %s threads\n", optarg);
 					num_threads = num;
 				}
 				break;
@@ -97,7 +96,7 @@ int main(int argc, char* argv[])
 						fprintf(stderr, "input for --threads not a number\n");
 						exit(1);
 					}
-					fprintf(stderr, "RM: %s iterations\n", optarg);
+					//fprintf(stderr, "RM: %s iterations\n", optarg);
 					num_iterations = num;
 				}
 				break;
@@ -142,6 +141,15 @@ int main(int argc, char* argv[])
 
 	//final printing
 	int tot_it = num_threads * num_iterations * 2;
+	char* name = "add-none";
+	if(opt_yield)
+	{
+		name = "add-yield";
+	}
+	else
+	{
+		name = "add-yield-none";
+	}
 
 	struct timespec timer2;
 	if(clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2) != 0)
@@ -152,7 +160,9 @@ int main(int argc, char* argv[])
 	//if(timer2.tv_sec - timer1.tv_sec > 0) fprintf(stderr, "hmmm...\n");
 	int f_time = timer2.tv_nsec - timer1.tv_nsec;
 	int avg_time = f_time / tot_it;
-	fprintf(stderr, "RM: time %d avgtime: %d sum: %lld\n", f_time, avg_time, sum);
+
+	fprintf(stderr, "%s,%d,%d,%d,%d,%d,%lld\n", name, num_threads, num_iterations,
+		tot_it, f_time, avg_time, sum);
 	fprintf(stdout, "%s,%d,%d,%d,%d,%d,%lld\n", name, num_threads, num_iterations,
 		tot_it, f_time, avg_time, sum);
 	return 0;
