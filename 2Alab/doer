@@ -1,0 +1,24 @@
+#!/bin/bash
+
+repeats=5
+
+if [ $# -eq 0 ] || { [ "$1" != "add" ] && [ "$1" != "list" ]; }; then
+	echo "which test? add or list?"
+	echo "usage: $0 add/list [more options]"
+	exit 1
+fi
+graph="plotter/lab2_$1.csv"
+> $graph # I clear the previous graph
+
+threads=(1 2 4 8 16 32 64)
+iterations=(10 100 1000 10000)
+
+for i in ${threads[@]}; do
+	for j in ${iterations[@]}; do
+		for c in `seq 1 $repeats`; do
+			./lab2_add --threads $i --iterations $j ${@:2} >> $graph || exit 1
+		done
+	done
+done
+
+cd plotter && ./lab2_$1.gp

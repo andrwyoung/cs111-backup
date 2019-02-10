@@ -2,3 +2,10 @@ NAME: Andrew Yong
 EMAIL: yong.andrew11@gmail.com
 ID: 604905807
 
+testing lab2_add:
+ran it with threads 1, 10, 50 or 100
+and iterations 100, 1000, 10000 or 100000
+
+notes:
+started getting race conditons starting with 10t1000i
+consistent race conditions 10t10000ic

@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <time.h>
 
 #include "utils.h"
 
@@ -13,9 +14,12 @@ struct arg_struct {
 	long long* pointer;
 };
 
+int opt_yield = 0;
 void add(long long* pointer, long long value)
 {
 	long long sum = *pointer + value;
+	if(opt_yield) 
+		sched_yield();
 	*pointer = sum;
 }
 
@@ -44,7 +48,12 @@ void* pthreader(void* arguments)
 
 int main(int argc, char* argv[])
 {
-	//remember to start the counter
+	struct timespec timer1;
+	if(clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1) != 0)
+	{
+		fprintf(stderr, "failed to get time 1\n");
+		exit (2);
+	}
 	//long long counter = 0;
 	char* name = "add-none";
 
@@ -52,8 +61,9 @@ int main(int argc, char* argv[])
 	int option_index = 0;
 	static struct option long_options[] =
 	{
-		{"threads", 	required_argument, 0, 't'},
-		{"iterations",	required_argument, 0, 'i'},
+		{"threads", 	required_argument, 	0, 't'},
+		{"iterations",	required_argument, 	0, 'i'},
+		{"yield", 	no_argument,		0, 'y'},
 		{0, 0, 0, 0}
 	};
 
@@ -91,6 +101,9 @@ int main(int argc, char* argv[])
 					num_iterations = num;
 				}
 				break;
+			case 'y':
+				opt_yield = 1;
+				break;
 			case '?':
 				fprintf(stderr, "invaild argument\n");
 				exit(1);
@@ -113,7 +126,7 @@ int main(int argc, char* argv[])
 		if(pthread_create(&threadids[i], NULL, &pthreader, (void*)&args) != 0)
 		{
 			fprintf(stderr, "failed to create thread\n");
-			exit (1);
+			exit (2);
 		}
 	}
 
@@ -123,13 +136,24 @@ int main(int argc, char* argv[])
 		if(pthread_join(threadids[i], NULL) != 0)
 		{
 			fprintf(stderr, "failed to join thread\n");
-			exit (1);
+			exit (2);
 		}
 	}
 
 	//final printing
-	fprintf(stderr, "RM: sum: %lld\n", sum);
-	fprintf(stdout, "%s,%d,%d,%d,%d,%d,%d\n", name, num_threads, num_iterations,
-		num_threads * num_iterations * 2, -1, -1, -1);
+	int tot_it = num_threads * num_iterations * 2;
+
+	struct timespec timer2;
+	if(clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2) != 0)
+	{
+		fprintf(stderr, "failed to get time 2\n");
+		exit (2);
+	}
+	//if(timer2.tv_sec - timer1.tv_sec > 0) fprintf(stderr, "hmmm...\n");
+	int f_time = timer2.tv_nsec - timer1.tv_nsec;
+	int avg_time = f_time / tot_it;
+	fprintf(stderr, "RM: time %d avgtime: %d sum: %lld\n", f_time, avg_time, sum);
+	fprintf(stdout, "%s,%d,%d,%d,%d,%d,%lld\n", name, num_threads, num_iterations,
+		tot_it, f_time, avg_time, sum);
 	return 0;
 }
