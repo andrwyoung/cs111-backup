@@ -7,5 +7,20 @@ ran it with threads 1, 10, 50 or 100
 and iterations 100, 1000, 10000 or 100000
 
 notes:
-started getting race conditons starting with 10t1000i
+started getting race conditions starting with 10t1000i
 consistent race conditions 10t10000ic
+
+2.1.1
+a) starting from 1000 iterations, with about 10 threads, does race conditions appear
+with more iterations it only gets more consistent: with 10000 iterations, race conditions
+are almost guaranteed to happen
+b) with smaller iterations, threads can run and finish without the other threads even being initiated. 
+thus race conditions can't happen. with larger iterations, the threads run for longer, 
+increasing probability that a thread steps over another thread
+
+2.1.2
+a) yields are much slower because the threads give up the CPU for all the other threads
+b) the additional time is due to all the context switching that's going on 
+c) no, because most of the time is being lost to the others
+
+
