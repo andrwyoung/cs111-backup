@@ -8,7 +8,7 @@
 //-1 if not int
 int stoi(char* string)
 {
-	int i;
+	unsigned int i;
 	for(i = 0; i < strlen(string); i++)
 	{
 		if(!isdigit(string[i]))

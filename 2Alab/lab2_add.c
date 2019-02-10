@@ -9,21 +9,43 @@
 #include "utils.h"
 
 struct arg_struct {
+	int iterations;
 	long long* pointer;
-	long long value;
 };
 
 void add(long long* pointer, long long value)
 {
-	fprintf(stderr, "1\n");
 	long long sum = *pointer + value;
 	*pointer = sum;
+}
+
+void* pthreader(void* arguments)
+{
+	struct arg_struct *args = arguments;
+	int iterations = args->iterations;
+	long long* pointer = args->pointer;
+	//fprintf(stderr, "RM: %d iterations. %lld sum\n", iterations, *pointer);
+	
+	int i;
+	for(i = 0; i < iterations; i++)
+	{
+		add(pointer, 1);
+	}
+	// fprintf(stderr, "RM: mid: %d iterations. %lld sum\n", iterations, *pointer);
+	for(i = 0; i < iterations; i++)
+	{
+		add(pointer, -1);
+	}
+	// fprintf(stderr, "RM: final: %d iterations. %lld sum\n", iterations, *pointer);
+
+	pthread_exit(NULL);
+	return NULL;
 }
 
 int main(int argc, char* argv[])
 {
 	//remember to start the counter
-	long long counter = 0;
+	//long long counter = 0;
 	char* name = "add-none";
 
 	int c;
@@ -79,17 +101,34 @@ int main(int argc, char* argv[])
 	}
 
 	//running the threads now
-	pthread_t threadids[num_iterations];
+	pthread_t threadids[num_threads];
 	long long sum = 0;
-	long long value = 1;
+	struct arg_struct args;
+	args.iterations = num_iterations;
+	args.pointer = &sum;
 	
 	int i;
 	for(i = 0; i < num_threads; i++)
 	{
-		
+		if(pthread_create(&threadids[i], NULL, &pthreader, (void*)&args) != 0)
+		{
+			fprintf(stderr, "failed to create thread\n");
+			exit (1);
+		}
+	}
+
+	//waiting for threads
+	for(i = 0; i < num_threads; i++)
+	{
+		if(pthread_join(threadids[i], NULL) != 0)
+		{
+			fprintf(stderr, "failed to join thread\n");
+			exit (1);
+		}
 	}
 
 	//final printing
+	fprintf(stderr, "RM: sum: %lld\n", sum);
 	fprintf(stdout, "%s,%d,%d,%d,%d,%d,%d\n", name, num_threads, num_iterations,
 		num_threads * num_iterations * 2, -1, -1, -1);
 	return 0;
