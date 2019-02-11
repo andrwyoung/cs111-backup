@@ -2,8 +2,7 @@
 #EMAIL: yong.andrew11@gmail.com
 #ID: 604905807
 
-files = lab2_add.c utils.c
-heads = utils.h
+files = lab2_add.c
 tars = Makefile
 
 flags = -pthread -Wall -Wextra
