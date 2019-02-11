@@ -1,8 +1,10 @@
 #!/bin/bash
 
-threads=(1)
-iterations=(10 20 40 80 100 1000 10000 100000)
-repeats=5
+threads=(1 2 4 8 12)
+iterations=(1 10 100 1000 10000)
+options=("--sync=c" "--sync=m" "--sync=s" "huh")
+flags=("--yield" "huh")
+repeats=2
 
 if [ $# -eq 0 ] || { [ "$1" != "add" ] && [ "$1" != "list" ]; }; then
 	echo "which test? add or list?"
@@ -10,11 +12,16 @@ if [ $# -eq 0 ] || { [ "$1" != "add" ] && [ "$1" != "list" ]; }; then
 	exit 1
 fi
 graph="plotter/lab2_$1.csv"
+> $graph 
 
 for i in ${threads[@]}; do
 	for j in ${iterations[@]}; do
-		for c in `seq 1 $repeats`; do
-			./lab2_add --threads $i --iterations $j ${@:2} >> $graph || exit 1
+		for k in ${options[@]}; do
+			for l in ${flags[@]}; do
+				for c in `seq 1 $repeats`; do
+					./lab2_add --threads $i --iterations $j $k $l >> $graph || exit 1
+				done
+			done
 		done
 	done
 done
