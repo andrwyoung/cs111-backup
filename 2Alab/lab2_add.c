@@ -1,13 +1,13 @@
 //NAME: Andrew Yong
 //EMAIL: yong.andrew11@gmail.com
 //ID: 604905807
-#include <stdio.h>
-#include <getopt.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <time.h>
-#include <string.h>
 #include <ctype.h>
+#include <getopt.h>
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 
 pthread_mutex_t mutexd;
@@ -73,12 +73,25 @@ void spin_add(long long* pointer, long long value)
 void cas_add(long long* pointer, long long value)
 {
 		//fprintf(stderr, "RM: cas add\n");
-	while(__sync_val_compare_and_swap(&spind, 0, 1)) continue;
-	if(opt_yield) 
-		sched_yield();
-	long long sum = *pointer + value;
-	*pointer = sum;
-	__sync_val_compare_and_swap(&spind, 1, 0);
+	long long old = 0;
+	long long val = 0;
+	do
+	{
+		old = *pointer;
+		long long new = old + value;
+		if(opt_yield)
+			sched_yield();
+		val = __sync_val_compare_and_swap(pointer, old, new);
+	} while(old != val);
+
+
+	
+	//while(__sync_val_compare_and_swap(&spind, 0, 1)) continue;
+	//if(opt_yield) 
+	//	sched_yield();
+	//long long sum = *pointer + value;
+	//*pointer = sum;
+	//__sync_val_compare_and_swap(&spind, 1, 0);
 }
 
 
@@ -259,8 +272,7 @@ int main(int argc, char* argv[])
 		fprintf(stderr, "failed to get time 1\n");
 		exit (2);
 	}
-	long long counter = 0; //spec told me to do this
-
+	
 	
 	//running the threads now
 	int i;
@@ -299,8 +311,8 @@ int main(int argc, char* argv[])
 	int f_time = timer2.tv_nsec - timer1.tv_nsec;
 	int avg_time = f_time / tot_it;
 
-	fprintf(stderr, "%s,%d,%d,%d,%d,%d,%lld\n", name, num_threads, num_iterations,
-		tot_it, f_time, avg_time, sum);
+	//fprintf(stderr, "%s,%d,%d,%d,%d,%d,%lld\n", name, num_threads, num_iterations,
+	//	tot_it, f_time, avg_time, sum);
 	fprintf(stdout, "%s,%d,%d,%d,%d,%d,%lld\n", name, num_threads, num_iterations,
 		tot_it, f_time, avg_time, sum);
 
