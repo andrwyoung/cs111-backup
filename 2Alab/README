@@ -2,8 +2,16 @@ NAME: Andrew Yong
 EMAIL: yong.andrew11@gmail.com
 ID: 604905807
 
-known bugs:
-if threads run more than a second, big no no
+lab2_add.c: the program for lab2_add
+lab2_list.c: the program for lab2_list
+README: this file
+Makefile: the file to make the files
+SortedList.c: fulfills SortedList.h
+*.png: all my graphs
+*.csv: the csvs that make the pngs
+*.gp: the scripts provided to make the gnuplots
+doer_*: my scripts to recreate the csvs. also calls the *.gp functions
+
 
 2.1.1
 a) starting from 1000 iterations, with about 10 threads, does race conditions appear
@@ -24,10 +32,22 @@ a) if more threads are created, more time goes to context switching and blocking
 but increasing the iterations averages the costs of that out
 b) thus the correct cost is the one with the most iterations and least threads
 
-2.1.4:
+2.1.4
 a) lower threads means less chance of blocking, and the threads don't have to wait for each other
 b) the more threads there are, the higher chance of blocking and thus the threads have to wait.
 That takes up CPU time and makes it take longer to finish
+
+2.2.1
+the mutex protected operations both increase logarithmically, 
+but the one in part 2 levels out as whereas the one in part one continues going up. 
+This is because the per-operation costs of part 1 stays constant throughout,
+but the per-operation costs for part 2 is logarithmic 
+
+2.2.2
+the spin lock has taken consistently longer than the mutex. 
+this is because spin lock waits for the resource to become available, wasting CPU time.
+mutex blocks instead, giving up the CPU time for other threads 
+
 
 
 
