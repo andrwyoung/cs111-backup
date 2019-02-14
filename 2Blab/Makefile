@@ -12,7 +12,7 @@ graphers = lab2_add.gp lab2_list.gp
 doers = doer_add.sh doer_list.sh
 
 execs = lab2_add lab2_list
-tars = Makefile README 
+tars = Makefile README profile.out
 
 flags = -pthread -Wall -Wextra
 profile = -g -lprofiler
@@ -42,7 +42,9 @@ clean:
 
 .PHONY: profile
 profile:
-	
+	export CPUPROFILE=profile.out; \
+	./lab2_list --threads 10 --iterations 1000 --sync s; \
+	pprof lab2_list profile.out
 
 .PHONY: dist
 dist: graphs
