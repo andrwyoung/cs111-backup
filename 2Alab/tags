@@ -1,0 +1,10 @@
+Mlab2_list	lab2_list.c	/^int main(int argc, char* argv[])$/
+arg_struct	lab2_list.c	/^struct arg_struct {$/
+catcher	lab2_list.c	/^void catcher()$/
+mutex_pthreader	lab2_list.c	/^void* mutex_pthreader(void* arguments)$/
+namer	lab2_list.c	/^void namer()$/
+pthreader	lab2_list.c	/^void* pthreader(void* arguments)$/
+pthreader_type	lab2_list.c	/^typedef void* (*pthreader_type)(void* arguments);$/
+rand_str	lab2_list.c	/^char* rand_str(int length)$/
+spin_pthreader	lab2_list.c	/^void* spin_pthreader(void* arguments)$/
+stoi	lab2_list.c	/^int stoi(char* string)$/

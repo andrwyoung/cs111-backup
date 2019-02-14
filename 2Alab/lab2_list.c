@@ -360,7 +360,8 @@ int main(int argc, char* argv[])
 	//getting all the data to print
 	int tot_lists = 1;
 	int tot_op = num_threads * num_iterations * 3;
-	int f_time = timer2.tv_nsec - timer1.tv_nsec;
+	long long f_sec = (timer2.tv_sec - timer1.tv_sec) * 1000000000;
+	int f_time = (timer2.tv_nsec - timer1.tv_nsec) + f_sec;
 	int avg_time = f_time / tot_op;
 	
 	namer();

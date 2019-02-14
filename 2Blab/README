@@ -48,6 +48,14 @@ the spin lock has taken consistently longer than the mutex.
 this is because spin lock waits for the resource to become available, wasting CPU time.
 mutex blocks instead, giving up the CPU time for other threads 
 
+2.3.1
+a) CPU time is spent actually looking a key up in the list, whether that be
+looking for a key to insert, to look up or to delete. not much time is spent in length
+since it's only going through the list once
+b) these are the most expensive because it takes forever to look for something
+c) most time is being spent waiting in the spin-lock tests
+d) most time is being spent waiting too. just not as much as in the spin lock test
+
 
 
 

@@ -14,16 +14,17 @@ doers = doer_add.sh doer_list.sh
 execs = lab2_add lab2_list
 tars = Makefile README 
 
-flags = -pthread -Wall -Wextra -g
+flags = -pthread -Wall -Wextra
+profile = -g -lprofiler
 id = 604905807
 tarname = lab2a-$(id).tar.gz
 
 build: lab2_add lab2_list 
 
 lab2_add: lab2_add.c
-	gcc $(flags) -o lab2_add lab2_add.c
+	gcc $(flags) $(profile) -o lab2_add lab2_add.c
 lab2_list: lab2_list.c SortedList.c
-	gcc $(flags) -o lab2_list lab2_list.c SortedList.c
+	gcc $(flags) $(profile) -o lab2_list lab2_list.c SortedList.c
 
 .PHONY: tests
 tests: $(execs)
@@ -31,13 +32,17 @@ tests: $(execs)
 	./doer_list.sh
 
 .PHONY: graphs
-graphs: $(graphers) $(csvs) tests
+graphs: tests $(graphers) $(csvs) 
 	./lab2_add.gp
 	./lab2_list.gp
 
 .PHONY: clean
 clean:
 	-@rm $(execs) $(tarname)
+
+.PHONY: profile
+profile:
+	
 
 .PHONY: dist
 dist: graphs
