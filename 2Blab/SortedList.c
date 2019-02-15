@@ -58,7 +58,7 @@ SortedListElement_t* SortedList_lookup(SortedList_t* list, const char* key)
 			sched_yield();
 		if(strcmp(mark->key, key) == 0) return mark;
 	}
-	//fprintf(stderr, "RM final lookup: %s\n", mark->key);
+	//fprintf(stderr, "RM lookup: %s\n", mark->key);
 	if(strcmp(mark->key, key) == 0) return mark;
 
 	//if for loop end, it's not found
@@ -84,53 +84,3 @@ int SortedList_length(SortedList_t* list)
 	}
 	return count;
 }
-
-
-/*
-int main()
-{
-	SortedList_t head;
-	head.key = NULL;
-	head.prev = &head;
-	head.next = &head;
-
-	int size = 10;
-	SortedListElement_t list[size];
-	
-	int i; //creating the elements
-	for(i = 0; i < size; i++)
-	{
-		SortedListElement_t temp;
-		//temp.key = malloc(sizeof(char) * 6);
-		//temp.key = strcpy(temp.key, "hey");
-		temp.key = "hey";
-		list[i] = temp;
-	}
-
-	//inserting the elements
-	list[0].key = "a";
-	list[1].key = "c";
-	list[2].key = "e";
-	list[3].key = "b";
-	list[4].key = "d";
-
-	for(i = 0; i < size; i++)
-	{
-		SortedList_insert(&head, &list[i]);
-	}
-
-	
-	if(SortedList_lookup(&head, "mm") != NULL) fprintf(stderr, "found!\n");
-	fprintf(stderr, "length %d\n", SortedList_length(&head));
-
-	for(i = 0; i < size; i++)
-	{
-		SortedList_delete(&list[i]);
-	}
-
-	fprintf(stderr, "length %d\n", SortedList_length(&head));
-
-	return 0;
-}
-*/
-

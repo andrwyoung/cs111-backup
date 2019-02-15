@@ -6,6 +6,7 @@ options=("--sync=c" "--sync=m" "--sync=s" "huh")
 flags=("--yield" "huh")
 
 graph="lab2_add.csv"
+> $graph
 
 count=0
 for i in ${threads[@]}; do

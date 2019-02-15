@@ -17,7 +17,7 @@ tars = Makefile README profile.out
 flags = -pthread -Wall -Wextra
 profile = -g -lprofiler
 id = 604905807
-tarname = lab2a-$(id).tar.gz
+tarname = lab2b-$(id).tar.gz
 
 build: lab2_add lab2_list 
 

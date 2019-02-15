@@ -63,7 +63,8 @@ the profiler shows that lookup takes the most time out of the SortedList functio
 b) since the lookup takes so long, the threads have to wait even longer for
 all the other threads to have their turn doing their lookups
 
-
+2.3.3
+a) lock wait time increases because it asks for 
 
 
 

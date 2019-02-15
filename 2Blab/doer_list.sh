@@ -10,6 +10,7 @@ options1=("--sync=s" "--sync=m")
 flags=("--yield=i" "--yield=d" "--yield=l" "--yield=id" "--yield=il" "--yield=dl" "--yield=idl" "huh")
 
 graph="lab2_list.csv"
+> $graph
 
 count=0
 
