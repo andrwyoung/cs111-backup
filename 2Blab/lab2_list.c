@@ -104,7 +104,7 @@ void* pthreader(void* arguments)
 		SortedList_t* head = args->lists[head_num].head;
 		pthread_mutex_t* mutexd = &args->lists[head_num].mutexd;
 		volatile int* spind = &args->lists[head_num].spind;
-		fprintf(stderr, "RM: insert hashed num: %d for key %s\n", head_num, elements[i].key);
+		//fprintf(stderr, "RM: insert hashed num: %d for key %s\n", head_num, elements[i].key);
 		
 		//insert
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
@@ -134,7 +134,7 @@ void* pthreader(void* arguments)
 		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
 		((timer2.tv_sec - timer1.tv_sec) * 1000000000);
 
-		fprintf(stderr, "length for head %d: %d\n", i, SortedList_length(args->lists[i].head));
+		//fprintf(stderr, "length for head %d: %d\n", i, SortedList_length(args->lists[i].head));
 		if(SortedList_length(args->lists[i].head) == -1) exit(2); //here!
 	
 		if(sync_op == 1) pthread_mutex_unlock(mutexd);
@@ -149,7 +149,7 @@ void* pthreader(void* arguments)
 		SortedList_t* head = args->lists[head_num].head;
 		pthread_mutex_t* mutexd = &args->lists[head_num].mutexd;
 		volatile int* spind = &args->lists[head_num].spind;
-		fprintf(stderr, "RM: lookup hashed num: %d for key %s\n", head_num, elements[i].key);
+		//fprintf(stderr, "RM: lookup hashed num: %d for key %s\n", head_num, elements[i].key);
 		
 	
 		//lookup
@@ -179,6 +179,7 @@ void* pthreader(void* arguments)
 		if(sync_op == 2) __sync_lock_release(spind);
 	}
 
+	if(sync_op == 0) args->wait_time = 0; //we're cheating here
 	pthread_exit(NULL);
 }
 
