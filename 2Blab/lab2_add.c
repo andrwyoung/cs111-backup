@@ -83,15 +83,6 @@ void cas_add(long long* pointer, long long value)
 			sched_yield();
 		val = __sync_val_compare_and_swap(pointer, old, new);
 	} while(old != val);
-
-
-	
-	//while(__sync_val_compare_and_swap(&spind, 0, 1)) continue;
-	//if(opt_yield) 
-	//	sched_yield();
-	//long long sum = *pointer + value;
-	//*pointer = sum;
-	//__sync_val_compare_and_swap(&spind, 1, 0);
 }
 
 

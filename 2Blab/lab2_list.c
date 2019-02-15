@@ -24,6 +24,7 @@ struct arg_struct {
 	int iterations;
 	SortedListElement_t* elements;
 	SortedList_t* head;
+	int wait_time;
 };
 
 void catcher()
@@ -67,6 +68,7 @@ void* pthreader(void* arguments)
 {
 	struct arg_struct* args = arguments;
 	SortedListElement_t* list = args->elements;
+	args->wait_time = 0;
 
 	int i;
 	for(i = 0; i < args->iterations; i++)
@@ -91,29 +93,54 @@ void* mutex_pthreader(void* arguments)
 {
 	struct arg_struct* args = arguments;
 	SortedListElement_t* list = args->elements;
+	struct timespec timer1;
+	struct timespec timer2;
+	args->wait_time = 0;
+
 
 	int i;
 	for(i = 0; i < args->iterations; i++)
 	{
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
 		pthread_mutex_lock(&mutexd);
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
+			((timer2.tv_sec - timer1.tv_sec) * 1000000000);
+
 		SortedList_insert(args->head, &list[i]);
 		pthread_mutex_unlock(&mutexd);
 	}
 
-	
-	pthread_mutex_lock(&mutexd);	
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
+	pthread_mutex_lock(&mutexd);
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+	args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
+	((timer2.tv_sec - timer1.tv_sec) * 1000000000);
+
 	if(SortedList_length(args->head) == -1) exit(2);
 	pthread_mutex_unlock(&mutexd);
 
 
 	for(i = 0; i < args->iterations; i++)
 	{
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
 		pthread_mutex_lock(&mutexd);
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
+			((timer2.tv_sec - timer1.tv_sec) * 1000000000);
+
+
 		SortedListElement_t* found = SortedList_lookup(args->head, list[i].key);
 		if(found == NULL) exit(2);
 		pthread_mutex_unlock(&mutexd);
 
+
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
 		pthread_mutex_lock(&mutexd);
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
+			((timer2.tv_sec - timer1.tv_sec) * 1000000000);
+			
 		if(SortedList_delete(found) == -1) exit(2);
 		pthread_mutex_unlock(&mutexd);
 	}
@@ -125,34 +152,57 @@ void* spin_pthreader(void* arguments)
 {
 	struct arg_struct* args = arguments;
 	SortedListElement_t* list = args->elements;
+	struct timespec timer1;
+	struct timespec timer2;
+	args->wait_time = 0;
 
 	int i;
 	for(i = 0; i < args->iterations; i++)
 	{
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
 		while(__sync_lock_test_and_set(&spind, 1)) continue;
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
+			((timer2.tv_sec - timer1.tv_sec) * 1000000000);
+
 		SortedList_insert(args->head, &list[i]);
 		__sync_lock_release(&spind);
 	}
 
-	
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
 	while(__sync_lock_test_and_set(&spind, 1)) continue;
+	clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+	args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
+		((timer2.tv_sec - timer1.tv_sec) * 1000000000);
+
 	if(SortedList_length(args->head) == -1) exit(2);
 	__sync_lock_release(&spind);
 
 
 	for(i = 0; i < args->iterations; i++)
 	{
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
 		while(__sync_lock_test_and_set(&spind, 1)) continue;
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
+			((timer2.tv_sec - timer1.tv_sec) * 1000000000);
+
 		SortedListElement_t* found = SortedList_lookup(args->head, list[i].key);
 		if(found == NULL) exit(2);
 		__sync_lock_release(&spind);
 		
+		
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
 		while(__sync_lock_test_and_set(&spind, 1)) continue;
+		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
+			((timer2.tv_sec - timer1.tv_sec) * 1000000000);
+		
 		if(SortedList_delete(found) == -1) exit(2);
 		__sync_lock_release(&spind);
 	}
 
-	pthread_exit(NULL);
+	pthread_exit(NULL);	
 }
 
 void namer()
@@ -330,7 +380,6 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	
 	//waiting for threads
 	for(i = 0; i < num_threads; i++)
 	{
@@ -357,26 +406,30 @@ int main(int argc, char* argv[])
 	}
 
 
-	//getting all the data to print
-	int tot_lists = 1;
-	int tot_op = num_threads * num_iterations * 3;
-	int f_time = timer2.tv_nsec - timer1.tv_nsec;
-	int avg_time = f_time / tot_op;
-	
-	namer();
-	fprintf(stdout, ",%d,%d,%d,%d,%d,%d\n", num_threads, num_iterations,
-		tot_lists, tot_op, f_time, avg_time);
 
-
-	//free everything
+	//free everything and getting waittimes
+	int wait_time = 0;
 	for(i = 0; i < tot; i++)
 	{
 		free((char*)list[i].key);
 	}
 	for(i = 0; i < num_threads; i++)
 	{
+		wait_time += args[i]->wait_time;
 		free(args[i]);
 	}
+
+	//getting all the data to print
+	int tot_lists = 1;
+	int tot_op = num_threads * num_iterations * 3;
+	int f_stime = (timer2.tv_sec - timer1.tv_sec) * 1000000000;
+	int f_time = timer2.tv_nsec - timer1.tv_nsec  + f_stime;
+	int avg_time = f_time / tot_op;
+	
+	namer();
+	fprintf(stdout, ",%d,%d,%d,%d,%d,%d,%d\n", num_threads, num_iterations,
+		tot_lists, tot_op, f_time, avg_time, wait_time);
+
 	pthread_mutex_destroy(&mutexd);
 	return 0;
 }

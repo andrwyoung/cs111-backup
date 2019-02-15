@@ -38,13 +38,13 @@ graphs: tests $(graphers) $(csvs)
 
 .PHONY: clean
 clean:
-	-@rm $(execs) $(tarname)
+	-@rm $(execs) $(tarname) profiler.prof
 
 .PHONY: profile
 profile:
-	export CPUPROFILE=profile.out; \
+	export CPUPROFILE=profiler.prof; \
 	./lab2_list --threads 10 --iterations 1000 --sync s; \
-	pprof lab2_list profile.out
+	pprof --list spin_pthreader lab2_list profiler.prof > profile.txt
 
 .PHONY: dist
 dist: graphs

@@ -53,9 +53,15 @@ a) CPU time is spent actually looking a key up in the list, whether that be
 looking for a key to insert, to look up or to delete. not much time is spent in length
 since it's only going through the list once
 b) these are the most expensive because it takes forever to look for something
-c) most time is being spent waiting in the spin-lock tests
+c) most time is being spent waiting for other threads to use SortedList functions
 d) most time is being spent waiting too. just not as much as in the spin lock test
 
+2.3.2
+a) line 132, 145 and 150 takes up the most time. 
+these are the lines before the SortedList functions  
+the profiler shows that lookup takes the most time out of the SortedList functions.
+b) since the lookup takes so long, the threads have to wait even longer for
+all the other threads to have their turn doing their lookups
 
 
 
