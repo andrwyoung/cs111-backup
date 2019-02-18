@@ -10,61 +10,51 @@ SortedList.c: fulfills SortedList.h
 *.png: all my graphs
 *.csv: the csvs that make the pngs
 *.gp: the scripts provided to make the gnuplots
-doer_*: my scripts to recreate the csvs. also calls the *.gp functions
+doer_*: my scripts to recreate the csvs
+2b_grapher: creates the .pngs for 2b
 
 
 2.1.1
-a) starting from 1000 iterations, with about 10 threads, does race conditions appear
-with more iterations it only gets more consistent: with 10000 iterations, race conditions
-are almost guaranteed to happen
-b) with smaller iterations, threads can run and finish without the other threads even being initiated. 
-thus race conditions can't happen. with larger iterations, the threads run for longer, 
-increasing probability that a thread steps over another thread
+a) starting from 1000 iterations, with about 10 threads, does race conditions appear with more iterations it only gets more consistent: with 10000 iterations, race conditions are almost guaranteed to happen
+b) with smaller iterations, threads can run and finish without the other threads even being initiated. thus race conditions can't happen. with larger iterations, the threads run for longer, increasing probability that a thread steps over another thread
 
 2.1.2
-a) yields are much slower because the threads give up the CPU for all the other threads.
-Every time you add, context switch happens
+a) yields are much slower because the threads give up the CPU for all the other threads. every time you add, context switch happens
 b) the additional time is due to all the context switching that's going on 
 c) no, because the time for each add is interrupted by the scheduler and context switches
 
 2.1.3
-a) if more threads are created, more time goes to context switching and blocking
-but increasing the iterations averages the costs of that out
+a) if more threads are created, more time goes to context switching and blocking but increasing the iterations averages the costs of that out
 b) thus the correct cost is the one with the most iterations and least threads
 
 2.1.4
 a) lower threads means less chance of blocking, and the threads don't have to wait for each other
-b) the more threads there are, the higher chance of blocking and thus the threads have to wait.
-That takes up CPU time and makes it take longer to finish
+b) the more threads there are, the higher chance of blocking and thus the threads have to wait. That takes up CPU time and makes it take longer to finish
 
 2.2.1
-the mutex protected operations both increase logarithmically, 
-but the one in part 2 levels out as whereas the one in part one continues going up. 
-This is because the per-operation costs of part 1 stays constant throughout,
-but the per-operation costs for part 2 is logarithmic 
+the mutex protected operations both increase logarithmically, but the one in part 2 levels out as whereas the one in part one continues going up. This is because the per-operation costs of part 1 stays constant throughout, but the per-operation costs for part 2 is logarithmic 
 
 2.2.2
-the spin lock has taken consistently longer than the mutex. 
-this is because spin lock waits for the resource to become available, wasting CPU time.
-mutex blocks instead, giving up the CPU time for other threads 
+the spin lock has taken consistently longer than the mutex. this is because spin lock waits for the resource to become available, wasting CPU time. mutex blocks instead, giving up the CPU time for other threads 
 
 2.3.1
-a) CPU time is spent actually looking a key up in the list, whether that be
-looking for a key to insert, to look up or to delete. not much time is spent in length
-since it's only going through the list once
+a) CPU time is spent actually looking a key up in the list, whether that be looking for a key to insert, to look up or to delete. not much time is spent in length since it's only going through the list once
 b) these are the most expensive because it takes forever to look for something
 c) most time is being spent waiting for other threads to use SortedList functions
 d) most time is being spent waiting too. just not as much as in the spin lock test
 
 2.3.2
-a) line 132, 145 and 150 takes up the most time. 
-these are the lines before the SortedList functions  
-the profiler shows that lookup takes the most time out of the SortedList functions.
-b) since the lookup takes so long, the threads have to wait even longer for
-all the other threads to have their turn doing their lookups
+a) line 132, 145 and 150 takes up the most time. these are the lines before the SortedList functions mentioned above, the profiler shows that lookup takes the most time out of the SortedList functions.
+b) since the lookup takes so long, the threads have to wait even longer for all the other threads to have their turn doing their lookups
 
 2.3.3
-a) lock wait time increases because it asks for 
+a) lock wait time increases because threads have to wait for other threads. there are more workers, but the tasks are limited. thus threads must wait longer to start doing the tasks
+b) as previously stated, having more threads increases wait time. but since the threads can work together in parallel, they can complete a task more efficiently. thus the completion time can rise less dramatically
+c) there are more workers with threads. so although they have to wait longer to start a task the threads work efficiently to finish the tasks at the same time. thus taking less time in total
 
+2.3.4
+a) as shown by the graphs, performance and number of lists are directly proportional
+b) yes. this is because as the number of lists increases, the number of contention between threads decreases since they don't have to wait for the same locks, thus increasing throughput because there is less wait time for a lock
+c) no. as shown on the graph, the greater the amount of threads, the longer it has to wait, decreasing throughput. this is not the case for the amount of lists. the more lists one has, the smaller the wait time. thus these two are not equivalent
 
 

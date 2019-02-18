@@ -107,10 +107,10 @@ void* pthreader(void* arguments)
 		//fprintf(stderr, "RM: insert hashed num: %d for key %s\n", head_num, elements[i].key);
 
 		//insert
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
+		clock_gettime(CLOCK_MONOTONIC, &timer1);
 		if(sync_op == 1) pthread_mutex_lock(mutexd);
 		if(sync_op == 2) while(__sync_lock_test_and_set(spind, 1)) continue;
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+		clock_gettime(CLOCK_MONOTONIC, &timer2);
 		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
 			((timer2.tv_sec - timer1.tv_sec) * 1000000000);
 
@@ -127,10 +127,10 @@ void* pthreader(void* arguments)
 		pthread_mutex_t* mutexd = &args->lists[i].mutexd;
 		volatile int* spind = &args->lists[i].spind;
 
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
+		clock_gettime(CLOCK_MONOTONIC, &timer1);
 		if(sync_op == 1) pthread_mutex_lock(mutexd);
 		if(sync_op == 2) while(__sync_lock_test_and_set(spind, 1)) continue;
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+		clock_gettime(CLOCK_MONOTONIC, &timer2);
 		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
 			((timer2.tv_sec - timer1.tv_sec) * 1000000000);
 
@@ -153,10 +153,10 @@ void* pthreader(void* arguments)
 		
 	
 		//lookup
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
+		clock_gettime(CLOCK_MONOTONIC, &timer1);
 		if(sync_op == 1) pthread_mutex_lock(mutexd);
 		if(sync_op == 2) while(__sync_lock_test_and_set(spind, 1)) continue;
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+		clock_gettime(CLOCK_MONOTONIC, &timer2);
 		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
 			((timer2.tv_sec - timer1.tv_sec) * 1000000000);
 
@@ -167,10 +167,10 @@ void* pthreader(void* arguments)
 
 
 		//deleting
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
+		clock_gettime(CLOCK_MONOTONIC, &timer1);
 		if(sync_op == 1) pthread_mutex_lock(mutexd);
 		if(sync_op == 2) while(__sync_lock_test_and_set(spind, 1)) continue;
-		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
+		clock_gettime(CLOCK_MONOTONIC, &timer2);
 		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
 			((timer2.tv_sec - timer1.tv_sec) * 1000000000);
 			
@@ -336,7 +336,6 @@ int main(int argc, char* argv[])
 		lists[i].head = head;
 		if(sync_op == 1) pthread_mutex_init(&lists[i].mutexd, NULL);
 		if(sync_op == 2) lists[i].spind = 0;
-
 	}	
 	
 	//create all those keys and elements
@@ -352,7 +351,7 @@ int main(int argc, char* argv[])
 	
 	//initalizing the timer
 	struct timespec timer1;
-	if(clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1) != 0)
+	if(clock_gettime(CLOCK_MONOTONIC, &timer1) != 0)
 	{
 		fprintf(stderr, "failed to get time 1\n");
 		exit (2);
@@ -394,7 +393,7 @@ int main(int argc, char* argv[])
 
 	//ending the timer
 	struct timespec timer2;
-	if(clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2) != 0)
+	if(clock_gettime(CLOCK_MONOTONIC, &timer2) != 0)
 	{
 		fprintf(stderr, "failed to get time 2\n");
 		exit (2);
