@@ -105,7 +105,7 @@ void* pthreader(void* arguments)
 		pthread_mutex_t* mutexd = &args->lists[head_num].mutexd;
 		volatile int* spind = &args->lists[head_num].spind;
 		//fprintf(stderr, "RM: insert hashed num: %d for key %s\n", head_num, elements[i].key);
-		
+
 		//insert
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer1);
 		if(sync_op == 1) pthread_mutex_lock(mutexd);
@@ -132,7 +132,7 @@ void* pthreader(void* arguments)
 		if(sync_op == 2) while(__sync_lock_test_and_set(spind, 1)) continue;
 		clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &timer2);
 		args->wait_time += timer2.tv_nsec - timer1.tv_nsec + 
-		((timer2.tv_sec - timer1.tv_sec) * 1000000000);
+			((timer2.tv_sec - timer1.tv_sec) * 1000000000);
 
 		//fprintf(stderr, "length for head %d: %d\n", i, SortedList_length(args->lists[i].head));
 		if(SortedList_length(args->lists[i].head) == -1) exit(2); //here!
@@ -429,7 +429,7 @@ int main(int argc, char* argv[])
 	long long f_time = timer2.tv_nsec - timer1.tv_nsec + 
 		((timer2.tv_sec - timer1.tv_sec) * 1000000000);
 	long long avg_time = f_time / tot_op;
-	//now actually print if
+	//now actually print it
 	namer(); //prints out the first item
 	fprintf(stdout, ",%d,%d,%d,%d,%lld,%lld,%lld\n", num_threads, num_iterations,
 		num_lists, tot_op, f_time, avg_time, wait_time);

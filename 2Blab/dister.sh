@@ -8,7 +8,7 @@ fi
 make && make dist || exit 1
 mv lab2?-$id.tar.gz tester/
 if cd tester; then
-	chmod +x ./test.sh
+	chmod +x ./test$1.sh
 	./test$1.sh $id
 	cd ..
 fi

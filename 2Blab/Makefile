@@ -9,7 +9,7 @@ pics2 = lab2_list-1.png lab2_list-2.png lab2_list-3.png lab2_list-4.png
 csvs = lab2_add.csv lab2_list.csv lab2b_list.csv
 
 graphers = lab2_add.gp lab2_list.gp 2b_grapher.gp
-doers = doer_add.sh doer_list.sh
+doers = doer_add.sh doer_list.sh doer_list2.sh
 
 execs = lab2_add lab2_list
 tars = Makefile README profile.out
@@ -30,11 +30,13 @@ lab2_list: lab2_list.c SortedList.c
 tests: $(execs)
 	./doer_add.sh 
 	./doer_list.sh
+	./doer_list2.sh
 
 .PHONY: graphs
 graphs: tests $(graphers) $(csvs) 
 	./lab2_add.gp
 	./lab2_list.gp
+	./2b_grapher.gp
 
 .PHONY: clean
 clean:
