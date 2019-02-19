@@ -431,7 +431,7 @@ int main(int argc, char* argv[])
 	//now actually print it
 	namer(); //prints out the first item
 	fprintf(stdout, ",%d,%d,%d,%d,%lld,%lld,%lld\n", num_threads, num_iterations,
-		num_lists, tot_op, f_time, avg_time, wait_time);
+		num_lists, tot_op, f_time, avg_time, wait_time / tot_op);
 
 	return 0;
 }
