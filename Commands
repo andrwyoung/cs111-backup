@@ -1,0 +1,2 @@
+sudo mount -o ro,loop EXT2_test.img mnt
+debugfs -f cmd_file trivial.img > fileinfo.txt

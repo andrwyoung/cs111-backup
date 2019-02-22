@@ -1,7 +1,7 @@
 debugfs: show_super_stats
 Filesystem volume name:   <none>
-Last mounted on:          /home/eva/Desktop/mnt
-Filesystem UUID:          038b097c-5144-4e06-9085-8b21f9e77ee9
+Last mounted on:          /tmp/test.23120
+Filesystem UUID:          c3686612-608d-44d6-aa6a-b6dc06f83962
 Filesystem magic number:  0xEF53
 Filesystem revision #:    1 (dynamic)
 Filesystem features:      ext_attr dir_index filetype sparse_super large_file
@@ -10,32 +10,32 @@ Default mount options:    user_xattr acl
 Filesystem state:         clean
 Errors behavior:          Continue
 Filesystem OS type:       Linux
-Inode count:              1000
-Block count:              1024
+Inode count:              24
+Block count:              64
 Reserved block count:     0
-Free blocks:              500
-Free inodes:              431
+Free blocks:              17
+Free inodes:              7
 First block:              1
 Block size:               1024
 Fragment size:            1024
 Blocks per group:         8192
 Fragments per group:      8192
-Inodes per group:         1000
-Inode blocks per group:   125
-Filesystem created:       Wed Aug  9 11:03:27 2017
-Last mount time:          Wed Feb 20 19:28:55 2019
-Last write time:          Wed Feb 20 19:34:23 2019
-Mount count:              2
+Inodes per group:         24
+Inode blocks per group:   3
+Filesystem created:       Wed Aug  9 10:58:29 2017
+Last mount time:          Wed Aug  9 10:58:32 2017
+Last write time:          Wed Aug  9 10:58:32 2017
+Mount count:              1
 Maximum mount count:      -1
-Last checked:             Wed Aug  9 11:03:27 2017
+Last checked:             Wed Aug  9 10:58:29 2017
 Check interval:           0 (<none>)
-Lifetime writes:          459 kB
+Lifetime writes:          35 kB
 Reserved blocks uid:      0 (user root)
 Reserved blocks gid:      0 (group root)
 First inode:              11
 Inode size:	          128
 Default directory hash:   half_md4
-Directory Hash Seed:      ae95fa53-3ad4-4c8d-957c-b1e8b8c67641
-Directories:              41
+Directory Hash Seed:      f46fd74a-0522-4eaf-8572-ac3e52232173
+Directories:              3
  Group  0: block bitmap at 3, inode bitmap at 4, inode table at 5
-           500 free blocks, 431 free inodes, 41 used directories
+           17 free blocks, 7 free inodes, 3 used directories
