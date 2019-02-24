@@ -1,0 +1,35 @@
+
+Assumptions:
+Equal amount of blocks in each group
+
+Problems:
+Bitmap offsets are jank
+
+
+
+
+Notes for discussion:
+Block is fixed number of bytes
+Can assume block size is 1024
+	Assume also that fragmentation size is also 1024
+	So writing 10 bytes takes up one block
+Can assume only 1 block group
+	superblock: all metadata about the filesystem
+		starts at 1024. one block
+		block size is in superblock
+	group descriptor table: metadata about particular group
+		starts at 2048. N blocks
+		one group descriptor table per group
+	block bitmap: which blocks are allocated. which are free
+		one block
+	inode bitmap: same but for inodes
+		one block
+		inode contains all the information for file
+	inode table: holds all the inodes (in array)
+	data blocks: all the data blocks 
+
+logical block offsets:
+1 - 12 are direct
+13 - 268 are indirect
+there 65536 double indirect blocks
+there are 16777216 triple indirect blocks
