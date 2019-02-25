@@ -1,6 +1,7 @@
 
 Assumptions:
 Equal amount of blocks in each group
+No indirect blocks for directories
 
 Problems:
 Bitmap offsets are jank
@@ -33,3 +34,8 @@ logical block offsets:
 13 - 268 are indirect
 there 65536 double indirect blocks
 there are 16777216 triple indirect blocks
+
+resources: 
+https://www.epochconverter.com/programming/c
+https://www.tutorialspoint.com/c_standard_library/c_function_strftime.htm
+https://linux.die.net/man/3/tzset
