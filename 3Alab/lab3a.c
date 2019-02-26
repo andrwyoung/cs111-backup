@@ -226,13 +226,15 @@ void print_inodes(int inode_table_offset, int inode_size, int inode_num, int fd)
 	
 	//checking if type is directory or file
 	__uint16_t type = *(__uint16_t*)buff;
+	bool symbolic_link = 0;
 	if(type & 0x8000) 
 		printf("f,");
 	else if(type & 0x4000) 
 		printf("d,");
-	else if(type & 0xA000)
+	else if(type & 0xA000) {
+		symbolic_link = 1;
 		printf("s,");
-	else
+	} else
 		printf("?,");
 	//mode is lower 12 bits of type
 	printf("%o,", type & 0xfff);
@@ -269,7 +271,7 @@ void print_inodes(int inode_table_offset, int inode_size, int inode_num, int fd)
 	printf("%d", *(__uint32_t*)(buff + 28));
 	
 	//for symbolic link, if size short, then exit
-	if(type & 0xA000  == 1 && file_size <= 60) {
+	if(symbolic_link && file_size <= 60) {
 		printf("\n");
 		free(buff);
 		return;
