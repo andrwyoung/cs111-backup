@@ -1,3 +1,7 @@
+#NAME: Andrew Yong, Aaron Philip
+#EMAIL: yong.andrew11@gmail.com, aaronpphilip@ucla.edu
+#ID: 604905807, 604924943
+
 files = lab3a.c
 heads = ext_fs.h
 flags = -Wall -Wextra

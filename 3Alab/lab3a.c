@@ -1,3 +1,6 @@
+//NAME: Andrew Yong, Aaron Philip
+//EMAIL: yong.andrew11@gmail.com, aaronpphilip@ucla.edu
+//ID: 604905807, 604924943
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -18,7 +21,7 @@ typedef char bool;
 //recurssive indirect block scanner
 void indirect_scanner(__uint32_t block, int depth, int blocks_behind, int owner, int fd) {
 	if(depth == 0) {
-		fprintf(stderr, "	finished\n");
+		//fprintf(stderr, "	finished\n");
 		return;
 	}
 
@@ -34,18 +37,15 @@ void indirect_scanner(__uint32_t block, int depth, int blocks_behind, int owner,
 	
 	int i; //now going into each inode in this block
 	for(i = 0; i < block_size / 4; i++) {
-		__uint32_t curr_inode = *(__uint32_t*)(buff + (4 * i));
-		if(curr_inode == 0) {
-			fprintf(stderr, "finished at depth %d\n", depth);
-			return;
+		__uint32_t curr_inode = *(__uint32_t*)(buff + i);
+		//fprintf(stderr, "inode #%d: %d\n", i, curr_inode);
+	
+		if(curr_inode != 0) {
+			blocks_behind += i + (depth == 2 ? (i + 1) * 256 : 0) + (depth == 3 ? (i + 1) * 256 * 256: 0);
+			printf("INDIRECT,%d,%d,%d,%d,%d\n", owner, depth, blocks_behind + (depth == 3 ? 256 : 0), block, curr_inode);
+			
+			indirect_scanner(curr_inode, depth - 1, blocks_behind, owner, fd);
 		}
-		
-		blocks_behind += i + (depth == 2 ? (i + 1) * 256 : 0) + (depth == 3 ? (i + 1) * 256 * 256: 0);
-		printf("INDIRECT,%d,%d,%d,%d,%d\n", owner, depth, blocks_behind  + i, block, curr_inode);
-		
-		indirect_scanner(curr_inode, depth - 1, blocks_behind, owner, fd);
-		//if (depth - 1 != 0)
-		//if (block now isn't 0) return
 	}
 
 	free(buff);
@@ -54,19 +54,43 @@ void indirect_scanner(__uint32_t block, int depth, int blocks_behind, int owner,
 //prints the directories
 void print_directory(int dir, int owner, int fd) {
 	int block_offset = block_size * dir;
-	__uint32_t* buff = malloc(sizeof(__uint32_t) * block_size); //to read in things
+	void* buff = malloc(sizeof(void) * block_size); //to read in things
 	if(pread(fd, buff, block_size, block_offset) < 0) {
 		fprintf(stderr, "pread failed\n");
 		exit (1);
 	}
 
-	printf("DIRENT,%d, %d\n", owner, *(__uint32_t*)buff);
+	int dirent_offset = 0; //directory entries are offset
+	void* curr_dirent = buff;
+	
+	//looping through the directory entries
+	while(1) {
+		__uint32_t inode = *(__uint32_t*)curr_dirent;
+		if(inode <= 0) return;
+		printf("DIRENT,%d,%d,%d,", owner, dirent_offset, inode); 
+
+		//entry length. used later too
+		__uint16_t ent_len = *(__uint16_t*)(curr_dirent + 4);
+		printf("%d,", ent_len);
+
+		//doing name now
+		unsigned char name_len = *(unsigned char*)(curr_dirent + 6);
+		char name[name_len + 1];
+		int i; //building the name
+		for(i = 0; i < name_len; i++) {
+			name[i] = *(unsigned char*)(curr_dirent + 8 + i);
+		}
+		name[name_len] = '\0';
+		printf("%d,'%s'", name_len, name);
+		printf("\n");
+
+		//go to next directory entry
+		dirent_offset += ent_len;
+		curr_dirent += ent_len;
+	}
+
+	free(buff);
 }
-
-
-
-
-
 
 
 
@@ -99,7 +123,7 @@ void print_superblock(struct ext2_super_block* superblock) {
 		1024 << superblock->s_log_block_size, superblock->s_inode_size, superblock->s_blocks_per_group, 
 		superblock->s_inodes_per_group, superblock->s_first_ino);
 
-
+	/*
 	fprintf(stderr, "block count: %d\n", superblock->s_blocks_count);
 	fprintf(stderr, "inode count: %d\n", superblock->s_inodes_count);
 	fprintf(stderr, "block size: %d\n", 1024 << superblock->s_log_block_size);
@@ -107,7 +131,7 @@ void print_superblock(struct ext2_super_block* superblock) {
 	fprintf(stderr, "blocks per group: %d\n", superblock->s_blocks_per_group);
 	fprintf(stderr, "inodes per group: %d\n", superblock->s_inodes_per_group);
 	fprintf(stderr, "first non-reseved inode: %d\n", superblock->s_first_ino);
-
+	*/
 }
 
 //fills out group descriptor struct
@@ -136,7 +160,7 @@ void print_group(struct ext2_group_desc* group, struct ext2_super_block* superbl
 		 superblock->s_inodes_count / total_groups, group->bg_free_blocks_count, group->bg_free_inodes_count,
 		 group->bg_block_bitmap, group->bg_inode_bitmap, group->bg_inode_table); 
 	
-
+	/*
 	fprintf(stderr, "group number: %d\n", group_no);
 	fprintf(stderr, "blocks in group: %d\n", superblock->s_blocks_count / total_groups);
 	fprintf(stderr, "inodes in group: %d\n", superblock->s_inodes_count / total_groups);
@@ -145,6 +169,7 @@ void print_group(struct ext2_group_desc* group, struct ext2_super_block* superbl
 	fprintf(stderr, "block bitmap: %d\n", group->bg_block_bitmap);
 	fprintf(stderr, "inode bitmap: %d\n", group->bg_inode_bitmap);
 	fprintf(stderr, "inode table: %d\n", group->bg_inode_table);
+	*/
 }
 
 //scan block bitmap and print out all free blocks
@@ -238,10 +263,19 @@ void print_inodes(int inode_table_offset, int inode_size, int inode_num, int fd)
 	printf("%s,", time_buff);
 
 	//file size
-	printf("%d,", *(__uint32_t*)(buff + 4));
+	__uint32_t file_size = *(__uint32_t*)(buff + 4);
+	printf("%d,", file_size);
 	//num of 512byte blocks (comma is gone so i can loop next)
 	printf("%d", *(__uint32_t*)(buff + 28));
 	
+	//for symbolic link, if size short, then exit
+	if(type & 0xA000  == 1 && file_size <= 60) {
+		printf("\n");
+		free(buff);
+		return;
+	}
+
+
 	//now for each inode, where is the block address?
 	int i, direct, num_blocks = 0;
 	int directory_blocks[12];
@@ -270,13 +304,10 @@ void print_inodes(int inode_table_offset, int inode_size, int inode_num, int fd)
 	//if it's a directory, print DIRENT lines
 	if(type & 0x4000) {
 		for(i = 0; i < num_blocks; i++) {
-			print_directory(i, inode_num, fd);
+			print_directory(directory_blocks[i], inode_num, fd);
 		}
 	}
-
-	//if it's a symbolic link....yikes
-
-
+	
 	free(buff);
 }
 
