@@ -1,0 +1,143 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_PROGRAM_AUTHOR	Darren Hiebert	/dhiebert@users.sourceforge.net/
+!_TAG_PROGRAM_NAME	Exuberant Ctags	//
+!_TAG_PROGRAM_URL	http://ctags.sourceforge.net	/official site/
+!_TAG_PROGRAM_VERSION	5.8	//
+EXT2FS_DATE	ext_fs.h	/^#define EXT2FS_DATE	/;"	d
+EXT2FS_VERSION	ext_fs.h	/^#define EXT2FS_VERSION	/;"	d
+EXT2_BAD_INO	ext_fs.h	/^#define	EXT2_BAD_INO	/;"	d
+EXT2_DIND_BLOCK	ext_fs.h	/^#define	EXT2_DIND_BLOCK	/;"	d
+EXT2_ERROR_FS	ext_fs.h	/^#define	EXT2_ERROR_FS	/;"	d
+EXT2_GOOD_OLD_FIRST_INO	ext_fs.h	/^#define EXT2_GOOD_OLD_FIRST_INO	/;"	d
+EXT2_IND_BLOCK	ext_fs.h	/^#define	EXT2_IND_BLOCK	/;"	d
+EXT2_MAX_BLOCK_SIZE	ext_fs.h	/^#define	EXT2_MAX_BLOCK_SIZE	/;"	d
+EXT2_MAX_FRAG_SIZE	ext_fs.h	/^#define	EXT2_MAX_FRAG_SIZE	/;"	d
+EXT2_MIN_BLOCK_LOG_SIZE	ext_fs.h	/^#define EXT2_MIN_BLOCK_LOG_SIZE	/;"	d
+EXT2_MIN_BLOCK_SIZE	ext_fs.h	/^#define EXT2_MIN_BLOCK_SIZE	/;"	d
+EXT2_MIN_FRAG_SIZE	ext_fs.h	/^#define EXT2_MIN_FRAG_SIZE	/;"	d
+EXT2_NAME_LEN	ext_fs.h	/^#define EXT2_NAME_LEN /;"	d
+EXT2_NDIR_BLOCKS	ext_fs.h	/^#define	EXT2_NDIR_BLOCKS	/;"	d
+EXT2_N_BLOCKS	ext_fs.h	/^#define	EXT2_N_BLOCKS	/;"	d
+EXT2_ROOT_INO	ext_fs.h	/^#define EXT2_ROOT_INO	/;"	d
+EXT2_SUPER_MAGIC	ext_fs.h	/^#define EXT2_SUPER_MAGIC	/;"	d
+EXT2_TIND_BLOCK	ext_fs.h	/^#define	EXT2_TIND_BLOCK	/;"	d
+EXT2_VALID_FS	ext_fs.h	/^#define	EXT2_VALID_FS	/;"	d
+__s16	ext_fs.h	/^typedef __int16_t	__s16;$/;"	t
+__s32	ext_fs.h	/^typedef __int32_t	__s32;$/;"	t
+__u16	ext_fs.h	/^typedef __uint16_t	__u16;$/;"	t
+__u32	ext_fs.h	/^typedef __uint32_t	__u32;$/;"	t
+__u8	ext_fs.h	/^typedef unsigned char	__u8;$/;"	t
+bg_block_bitmap	ext_fs.h	/^	__u32	bg_block_bitmap;		\/* Blocks bitmap block *\/$/;"	m	struct:ext2_group_desc
+bg_free_blocks_count	ext_fs.h	/^	__u16	bg_free_blocks_count;	\/* Free blocks count *\/$/;"	m	struct:ext2_group_desc
+bg_free_inodes_count	ext_fs.h	/^	__u16	bg_free_inodes_count;	\/* Free inodes count *\/$/;"	m	struct:ext2_group_desc
+bg_inode_bitmap	ext_fs.h	/^	__u32	bg_inode_bitmap;		\/* Inodes bitmap block *\/$/;"	m	struct:ext2_group_desc
+bg_inode_table	ext_fs.h	/^	__u32	bg_inode_table;		\/* Inodes table block *\/$/;"	m	struct:ext2_group_desc
+bg_pad	ext_fs.h	/^	__u16	bg_pad;$/;"	m	struct:ext2_group_desc
+bg_reserved	ext_fs.h	/^	__u32	bg_reserved[3];$/;"	m	struct:ext2_group_desc
+bg_used_dirs_count	ext_fs.h	/^	__u16	bg_used_dirs_count;	\/* Directories count *\/$/;"	m	struct:ext2_group_desc
+block_size	lab3a.c	/^int block_size = 1024;$/;"	v
+bool	lab3a.c	/^typedef char bool;$/;"	t	file:
+checkFiles	tester/functions.sh	/^function checkFiles {$/;"	f
+checkMakefile	tester/functions.sh	/^function checkMakefile {$/;"	f
+checkPrograms	tester/functions.sh	/^function checkPrograms {$/;"	f
+checkReferences	tester/functions.sh	/^function checkReferences {$/;"	f
+checkSuffixes	tester/functions.sh	/^function checkSuffixes {$/;"	f
+checkTarget	tester/functions.sh	/^function checkTarget {$/;"	f
+cleanup	tester/functions.sh	/^function cleanup {$/;"	f
+createSheet	tester/functions.sh	/^function createSheet {$/;"	f
+dirCheck	tester/functions.sh	/^function dirCheck {$/;"	f
+dirSnap	tester/functions.sh	/^function dirSnap {$/;"	f
+downLoad	tester/functions.sh	/^function downLoad {$/;"	f
+exec	Makefile	/^exec = lab3a$/;"	m
+ext2_dir_entry	ext_fs.h	/^struct ext2_dir_entry {$/;"	s
+ext2_group_desc	ext_fs.h	/^struct ext2_group_desc$/;"	s
+ext2_inode	ext_fs.h	/^struct ext2_inode {$/;"	s
+ext2_super_block	ext_fs.h	/^struct ext2_super_block {$/;"	s
+fieldRange	tester/functions.sh	/^function fieldRange {$/;"	f
+fieldValue	tester/functions.sh	/^function fieldValue {$/;"	f
+file_type	ext_fs.h	/^	__u8	file_type;		\/* file type *\/$/;"	m	struct:ext2_dir_entry
+files	Makefile	/^files = lab3a.c$/;"	m
+flags	Makefile	/^flags = -Wall -Wextra$/;"	m
+getEmail	tester/functions.sh	/^function getEmail {$/;"	f
+getIDs	tester/functions.sh	/^function getIDs {$/;"	f
+getManual	tester/functions.sh	/^function getManual {$/;"	f
+getName	tester/functions.sh	/^function getName {$/;"	f
+getSlips	tester/functions.sh	/^function getSlips {$/;"	f
+heads	Makefile	/^heads = ext_fs.h$/;"	m
+i_atime	ext_fs.h	/^	__u32	i_atime;	\/* Access time *\/$/;"	m	struct:ext2_inode
+i_block	ext_fs.h	/^	__u32	i_block[EXT2_N_BLOCKS];\/* Pointers to blocks *\/$/;"	m	struct:ext2_inode
+i_blocks	ext_fs.h	/^	__u32	i_blocks;	\/* Blocks count *\/$/;"	m	struct:ext2_inode
+i_ctime	ext_fs.h	/^	__u32	i_ctime;	\/* Creation time *\/$/;"	m	struct:ext2_inode
+i_dir_acl	ext_fs.h	/^	__u32	i_dir_acl;	\/* Directory ACL *\/$/;"	m	struct:ext2_inode
+i_dtime	ext_fs.h	/^	__u32	i_dtime;	\/* Deletion Time *\/$/;"	m	struct:ext2_inode
+i_faddr	ext_fs.h	/^	__u32	i_faddr;	\/* Fragment address *\/$/;"	m	struct:ext2_inode
+i_file_acl	ext_fs.h	/^	__u32	i_file_acl;	\/* File ACL *\/$/;"	m	struct:ext2_inode
+i_flags	ext_fs.h	/^	__u32	i_flags;	\/* File flags *\/$/;"	m	struct:ext2_inode
+i_frag	ext_fs.h	/^	__u8	i_frag;		\/* Fragment number *\/$/;"	m	struct:ext2_inode
+i_fsize	ext_fs.h	/^	__u8	i_fsize;	\/* Fragment size *\/$/;"	m	struct:ext2_inode
+i_gid	ext_fs.h	/^	__u16	i_gid;		\/* Group Id *\/$/;"	m	struct:ext2_inode
+i_links_count	ext_fs.h	/^	__u16	i_links_count;	\/* Links count *\/$/;"	m	struct:ext2_inode
+i_mode	ext_fs.h	/^	__u16	i_mode;		\/* File mode *\/$/;"	m	struct:ext2_inode
+i_mtime	ext_fs.h	/^	__u32	i_mtime;	\/* Modification time *\/$/;"	m	struct:ext2_inode
+i_pad1	ext_fs.h	/^	__u16	i_pad1;$/;"	m	struct:ext2_inode
+i_reserved1	ext_fs.h	/^	__u32   i_reserved1;$/;"	m	struct:ext2_inode
+i_reserved2	ext_fs.h	/^	__u32	i_reserved2[2];$/;"	m	struct:ext2_inode
+i_size	ext_fs.h	/^	__u32	i_size;		\/* Size in bytes *\/$/;"	m	struct:ext2_inode
+i_uid	ext_fs.h	/^	__u16	i_uid;		\/* Owner Uid *\/$/;"	m	struct:ext2_inode
+i_version	ext_fs.h	/^	__u32	i_version;	\/* File version (for NFS) *\/$/;"	m	struct:ext2_inode
+id	Makefile	/^id = 604905807$/;"	m
+indirect_scanner	lab3a.c	/^void indirect_scanner(__uint32_t block, int depth, int blocks_behind, int owner, int fd) {$/;"	f
+inode	ext_fs.h	/^	__u32	inode;			\/* Inode number *\/$/;"	m	struct:ext2_dir_entry
+main	lab3a.c	/^int main(int argc, char* argv[])$/;"	f
+name	ext_fs.h	/^	char	name[EXT2_NAME_LEN];	\/* File name *\/$/;"	m	struct:ext2_dir_entry
+name_len	ext_fs.h	/^	__u8	name_len;		\/* name length	*\/$/;"	m	struct:ext2_dir_entry
+noOutput	tester/functions.sh	/^function noOutput {$/;"	f
+numFields	tester/functions.sh	/^function numFields {$/;"	f
+penalty_init	tester/functions.sh	/^function penalty_init {$/;"	f
+print_directory	lab3a.c	/^void print_directory(int dir, int owner, int fd) {$/;"	f
+print_group	lab3a.c	/^void print_group(struct ext2_group_desc* group, struct ext2_super_block* superblock, int group_no) {$/;"	f
+print_inodes	lab3a.c	/^void print_inodes(int inode_table_offset, int inode_size, int inode_num, int fd) {$/;"	f
+print_superblock	lab3a.c	/^void print_superblock(struct ext2_super_block* superblock) {$/;"	f
+rec_len	ext_fs.h	/^	__u16	rec_len;		\/* Directory entry length *\/$/;"	m	struct:ext2_dir_entry
+s_block_group_nr	ext_fs.h	/^	__u16	s_block_group_nr; 	\/* block group # of this superblock *\/$/;"	m	struct:ext2_super_block
+s_blocks_count	ext_fs.h	/^	__u32	s_blocks_count;		\/* Blocks count *\/$/;"	m	struct:ext2_super_block
+s_blocks_per_group	ext_fs.h	/^	__u32	s_blocks_per_group;	\/* # Blocks per group *\/$/;"	m	struct:ext2_super_block
+s_checkinterval	ext_fs.h	/^	__u32	s_checkinterval;	\/* max. time between checks *\/$/;"	m	struct:ext2_super_block
+s_creator_os	ext_fs.h	/^	__u32	s_creator_os;		\/* OS *\/$/;"	m	struct:ext2_super_block
+s_def_resgid	ext_fs.h	/^	__u16	s_def_resgid;		\/* Default gid for reserved blocks *\/$/;"	m	struct:ext2_super_block
+s_def_resuid	ext_fs.h	/^	__u16	s_def_resuid;		\/* Default uid for reserved blocks *\/$/;"	m	struct:ext2_super_block
+s_errors	ext_fs.h	/^	__u16	s_errors;		\/* Behaviour when detecting errors *\/$/;"	m	struct:ext2_super_block
+s_feature_compat	ext_fs.h	/^	__u32	s_feature_compat; 	\/* compatible feature set *\/$/;"	m	struct:ext2_super_block
+s_feature_incompat	ext_fs.h	/^	__u32	s_feature_incompat; 	\/* incompatible feature set *\/$/;"	m	struct:ext2_super_block
+s_feature_ro_compat	ext_fs.h	/^	__u32	s_feature_ro_compat; 	\/* readonly-compatible feature set *\/$/;"	m	struct:ext2_super_block
+s_first_data_block	ext_fs.h	/^	__u32	s_first_data_block;	\/* First Data Block *\/$/;"	m	struct:ext2_super_block
+s_first_ino	ext_fs.h	/^	__u32	s_first_ino; 		\/* First non-reserved inode *\/$/;"	m	struct:ext2_super_block
+s_frags_per_group	ext_fs.h	/^	__u32	s_frags_per_group;	\/* # Fragments per group *\/$/;"	m	struct:ext2_super_block
+s_free_blocks_count	ext_fs.h	/^	__u32	s_free_blocks_count;	\/* Free blocks count *\/$/;"	m	struct:ext2_super_block
+s_free_inodes_count	ext_fs.h	/^	__u32	s_free_inodes_count;	\/* Free inodes count *\/$/;"	m	struct:ext2_super_block
+s_inode_size	ext_fs.h	/^	__u16   s_inode_size; 		\/* size of inode structure *\/$/;"	m	struct:ext2_super_block
+s_inodes_count	ext_fs.h	/^	__u32	s_inodes_count;		\/* Inodes count *\/$/;"	m	struct:ext2_super_block
+s_inodes_per_group	ext_fs.h	/^	__u32	s_inodes_per_group;	\/* # Inodes per group *\/$/;"	m	struct:ext2_super_block
+s_lastcheck	ext_fs.h	/^	__u32	s_lastcheck;		\/* time of last check *\/$/;"	m	struct:ext2_super_block
+s_log_block_size	ext_fs.h	/^	__u32	s_log_block_size;	\/* log2(Block size) *\/$/;"	m	struct:ext2_super_block
+s_log_frag_size	ext_fs.h	/^	__s32	s_log_frag_size;	\/* log2(Fragment size) *\/$/;"	m	struct:ext2_super_block
+s_magic	ext_fs.h	/^	__u16	s_magic;		\/* Magic signature *\/$/;"	m	struct:ext2_super_block
+s_max_mnt_count	ext_fs.h	/^	__s16	s_max_mnt_count;	\/* Maximal mount count *\/$/;"	m	struct:ext2_super_block
+s_minor_rev_level	ext_fs.h	/^	__u16	s_minor_rev_level; 	\/* minor revision level *\/$/;"	m	struct:ext2_super_block
+s_mnt_count	ext_fs.h	/^	__u16	s_mnt_count;		\/* Mount count *\/$/;"	m	struct:ext2_super_block
+s_mtime	ext_fs.h	/^	__u32	s_mtime;		\/* Mount time *\/$/;"	m	struct:ext2_super_block
+s_r_blocks_count	ext_fs.h	/^	__u32	s_r_blocks_count;	\/* Reserved blocks count *\/$/;"	m	struct:ext2_super_block
+s_reserved	ext_fs.h	/^	__u32	s_reserved[230];	\/* Padding to the end of the block *\/$/;"	m	struct:ext2_super_block
+s_rev_level	ext_fs.h	/^	__u32	s_rev_level;		\/* Revision level *\/$/;"	m	struct:ext2_super_block
+s_state	ext_fs.h	/^	__u16	s_state;		\/* File system state *\/$/;"	m	struct:ext2_super_block
+s_wtime	ext_fs.h	/^	__u32	s_wtime;		\/* Write time *\/$/;"	m	struct:ext2_super_block
+scan_block_bitmap	lab3a.c	/^int scan_block_bitmap(int offset, int num_blocks, int fd) {$/;"	f
+scan_group	lab3a.c	/^int scan_group(struct ext2_group_desc* group, int fd, int start_pos) {$/;"	f
+scan_inode_bitmap	lab3a.c	/^int scan_inode_bitmap(int bitmap_offset, int num_inodes, int inode_size, int fd) {$/;"	f
+scan_superblock	lab3a.c	/^int scan_superblock(struct ext2_super_block* superblock, int fd) {$/;"	f
+tarname	Makefile	/^tarname = lab3a-$(id).tar.gz$/;"	m
+tars	Makefile	/^tars = Makefile README$/;"	m
+testRC	tester/functions.sh	/^function testRC {$/;"	f
+timeout_init	tester/functions.sh	/^function timeout_init {$/;"	f
+unTar	tester/functions.sh	/^function unTar {$/;"	f

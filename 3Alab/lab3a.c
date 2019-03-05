@@ -353,6 +353,7 @@ int scan_inode_bitmap(int bitmap_offset, int num_inodes, int inode_size, int fd)
 
 
 int main(int argc, char* argv[])
+
 {
 	//invaild arguments?
 	if(argc != 2) {

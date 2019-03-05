@@ -1,0 +1,17 @@
+NAME: Andrew Yong
+EMAIL: yong.andrew11@gmail.com
+ID: 604905807
+
+Serial Number: BBGW17051601
+Mac: 2CF7F1066541
+
+my_beaglebone: picture with my beaglebone
+connected: 
+	wifi portion of ifconfig on beaglebone
+	changing hostname
+copy: scping hello world program into beaglebone
+build_run: running hello world progam through ssh
+git: installing git then cloning it
+
+Makefile: make tarball
+README: this file
