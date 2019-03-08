@@ -3,6 +3,43 @@
 #include <ctype.h>
 #include <string.h>
 #include <getopt.h>
+#include <mraa.h>
+#include <signal.h>
+#include <math.h> //for log
+#include <time.h> //for localtime
+
+#define SENSOR 0
+#define BUTTON 62
+
+sig_atomic_t volatile run_flag = 1;
+int period = 1; //time before each measurement in seconds
+char temp_type = 'f'; //celcius or farieheit
+
+void handler()
+{
+	run_flag = 0;
+}
+
+void print_temp(uint16_t value)
+{
+	int B = 4275; //B value for thermistor?
+	int R0 = 100000;
+
+	//convert value to temperature
+	float R = 1023.0/((float) value) - 1.0;
+	R *= R0;
+
+	float temp = 1.0/(log(R/R0)/B+1/298.15)-273.15;
+	if(temp_type == 'f') temp = (temp * 9 / 5) + 32;
+
+	//get time
+	char time_buff[80];
+	long curr_time = time(NULL);
+	struct tm ts = *localtime(&curr_time);
+	strftime(time_buff, sizeof(time_buff), "%H:%M:%S", &ts);
+
+	dprintf(1, "%s %0.1f\n", time_buff, temp);
+}
 
 int stoi(char* string)
 {
@@ -39,21 +76,31 @@ int main(int argc, char* argv[])
 		switch(c)
 		{
 			case 'k':
-				if(*optarg != 'F' || *optarg != 'C')
+				switch(optarg[0])
 				{
-					fprintf(stderr, "SCALE: invalid argument (F or C)\n");
-					exit(1);
+					case 'F':
+						temp_type = 'f';
+						break;
+					case 'C':
+						temp_type = 'c';
+						break;
+					default:
+						fprintf(stderr, "SCALE: invalid argument (F or C)\n");
+						exit(1);
 				}
 				break;
 			case 'p':
 				{
 					int num = stoi(optarg);
-					if (num < 0)
+					if (num <= 0)
 					{
 						fprintf(stderr, "PEROID: argument must be number\n");
 						exit(1);
 					}
+
+					period = num;
 				}
+				break;
 			case 'l':
 				fprintf(stderr, "logging? do a funtion?\n");
 				break;
@@ -65,5 +112,29 @@ int main(int argc, char* argv[])
 			//mark
 		}
 	}
+
+	//initializing all components
+	signal(SIGINT, handler);
+	mraa_init();
+
+	uint16_t sensor_value;
+	mraa_aio_context temp_sensor;
+
+	temp_sensor = mraa_aio_init(SENSOR);
+
+	mraa_gpio_context button;
+	button = mraa_gpio_init(BUTTON);
+	mraa_gpio_dir(button, MRAA_GPIO_IN);
+	mraa_gpio_isr(button, MRAA_GPIO_EDGE_RISING, &handler, NULL);
+
+	while(run_flag)
+	{
+		sensor_value = mraa_aio_read(temp_sensor);
+		print_temp(sensor_value);
+		sleep(period);
+	}
+
+	mraa_aio_close(temp_sensor);
+	mraa_gpio_close(button);
 	return 0;
 }

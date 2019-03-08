@@ -1,2 +1,15 @@
 sudo mount -o ro,loop EXT2_test.img mnt
 debugfs -f cmd_file trivial.img > fileinfo.txt
+
+git clone https://github.com/intel-iot-devkit/mraa.git
+
+sudo apt-get install dirmngr
+apt-get install cmake
+apt-get install swig
+make && sudo make install
+ldconfig
+
+
+
+follow instructions for Ubuntu: https://github.com/intel-iot-devkit/mraa
+sudo add-apt-repository ppa:mraa/mraa | sudo apt-key -
