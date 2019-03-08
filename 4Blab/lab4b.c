@@ -7,9 +7,11 @@
 #include <signal.h>
 #include <math.h> //for log
 #include <time.h> //for localtime
+#include <poll.h>
 
 #define SENSOR 0
 #define BUTTON 62
+#define BUFF_SIZE 100
 
 sig_atomic_t volatile run_flag = 1;
 int period = 1; //time before each measurement in seconds
@@ -17,6 +19,16 @@ char temp_type = 'f'; //celcius or farieheit
 
 void handler()
 {
+	//get time
+	char time_buff[80];
+	long curr_time = time(NULL);
+	struct tm ts = *localtime(&curr_time);
+	strftime(time_buff, sizeof(time_buff), "%H:%M:%S", &ts);
+
+	write(1, time_buff, 8);
+	write(1, " SHUTDOWN\n", 10);
+
+	//doesn't need to be atomic since all threads are interruped
 	run_flag = 0;
 }
 
@@ -53,6 +65,33 @@ int stoi(char* string)
 		}
 	}
 	return atoi(string);
+}
+
+//loops and takes in stdin
+void* pthreader()
+{
+	int fd = 0;
+	char buff[BUFF_SIZE]; //for reading in stdin
+	int ret = BUFFSIZE; //return value for read()
+
+	while(run_flag)
+	{
+		//wait for things to come in from stdin
+		poll(&fd, 1, -1);	
+
+		//now handle the events
+		while(ret == BUFF_SIZE)
+		{
+			ret = read(fd, buff, BUFF_SIZE);	
+			if(ret == 0)
+			{
+				fprintf(stderr, "read failed\n");
+				exit(1);
+			}
+
+			write(1, buff, BUFFSIZE);
+		}
+	}
 }
 
 int main(int argc, char* argv[]) 
