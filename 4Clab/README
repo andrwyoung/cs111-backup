@@ -1,0 +1,12 @@
+htoms(atoi(port))
+gethostbyname(hostname)
+socket()
+connect()
+
+install libssl-dev
+SSL_library_init()
+
+-lssl -lcrypto
+
+SSL_shutdown(SSL *ssl)
+SSL_free(SSL *ssl)

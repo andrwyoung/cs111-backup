@@ -1,0 +1,20 @@
+NAME: Andrew Yong
+EMAIL: yong.andrew11@gmail.com
+ID: 604905807
+
+files:
+
+
+sources:
+download page: https://github.com/intel-iot-devkit/mraa
+
+doing sensor: https://navinbhaskar.wordpress.com/2016/07/05/cc-on-intel-edisongalileo-part5temperature-sensor/
+
+polling: https://stackoverflow.com/questions/37011195/how-to-poll-simultaneously-from-stdin-and-from-sockets
+http://pubs.opengroup.org/onlinepubs/009695399/functions/poll.html
+
+htoms(atoi(port))
+gethostbyname(hostname)
+socket()
+connect()
+

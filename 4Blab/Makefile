@@ -1,3 +1,6 @@
+# NAME: Andrew Yong
+# EMAIL: yong.andrew11@gmail.com
+# ID: 604905807
 
 files = lab4b.c
 flags = -Wall -Wextra -lmraa -lm

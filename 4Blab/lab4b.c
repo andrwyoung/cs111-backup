@@ -1,3 +1,6 @@
+//NAME: Andrew Yong
+//EMAIL: yong.andrew11@gmail.com
+//ID: 604905807
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -8,14 +11,16 @@
 #include <math.h> //for log
 #include <time.h> //for localtime
 #include <poll.h>
+#include <pthread.h>
 
 #define SENSOR 0
-#define BUTTON 62
+#define BUTTON 60
 #define BUFF_SIZE 100
 
 sig_atomic_t volatile run_flag = 1;
 int period = 1; //time before each measurement in seconds
 char temp_type = 'f'; //celcius or farieheit
+pthread_mutex_t mutexd;
 
 void handler()
 {
@@ -30,6 +35,39 @@ void handler()
 
 	//doesn't need to be atomic since all threads are interruped
 	run_flag = 0;
+}
+
+int stoi(char* string)
+{
+	unsigned int i;
+	for(i = 0; i < strlen(string); i++)
+	{
+		if(!isdigit(string[i]))
+		{
+			fprintf(stderr, "not a number\n");
+			return -1;
+		}
+	}
+	return atoi(string);
+}
+
+int chin(char file[])
+{
+	int fd = open(file, O_WRONLY);
+	if(fd >= 0)
+	{
+		close(1);
+		dup(fd);
+		close(fd);
+		return 0;
+
+	}
+	else
+	{
+		fprintf(stderr,  "failed to open %s\n", file); 
+		return 1;
+
+	}
 }
 
 void print_temp(uint16_t value)
@@ -53,45 +91,68 @@ void print_temp(uint16_t value)
 	dprintf(1, "%s %0.1f\n", time_buff, temp);
 }
 
-int stoi(char* string)
-{
-	unsigned int i;
-	for(i = 0; i < strlen(string); i++)
-	{
-		if(!isdigit(string[i]))
-		{
-			fprintf(stderr, "not a number\n");
-			return -1;
-		}
-	}
-	return atoi(string);
-}
-
 //loops and takes in stdin
 void* pthreader()
 {
-	int fd = 0;
+	struct pollfd fds[1];
+	fds[1].fd = 0;
+	fds[1].events = POLLIN;
 	char buff[BUFF_SIZE]; //for reading in stdin
-	int ret = BUFFSIZE; //return value for read()
+	int ret = BUFF_SIZE; //return value for read()
+	
+	char* command = malloc(sizeof(char));
+	int count;
 
 	while(run_flag)
 	{
 		//wait for things to come in from stdin
-		poll(&fd, 1, -1);	
+		poll(fds, 1, -1);	
 
-		//now handle the events
-		while(ret == BUFF_SIZE)
+		//read in the stuff
+		do
 		{
-			ret = read(fd, buff, BUFF_SIZE);	
-			if(ret == 0)
+			ret = read(0, buff, BUFF_SIZE);	
+			if(ret < 0)
 			{
 				fprintf(stderr, "read failed\n");
 				exit(1);
 			}
 
-			write(1, buff, BUFFSIZE);
+			fprintf(stderr, "got %d bytes!\n", ret);
+		} while(ret == BUFF_SIZE);
+
+		//now handle the events
+		//carefully to prevent race conditions
+
+		if(strncmp("SCALE=", buff, 6) == 0 && ret == 8)
+		{
+			fprintf(stderr, "Scale\n");
 		}
+		else if(strncmp("PERIOD=", buff, 7) == 0)
+		{
+			//check for 
+			fprintf(stderr, "Period\n");
+		}
+		else if(strncmp("STOP", buff, 4) == 0 && ret == 5)
+		{
+			fprintf(stderr, "STOPping\n");
+		}
+		else if(strncmp("START", buff, 5) == 0 && ret == 6)
+		{
+			fprintf(stderr, "Starting\n");
+		}
+		else if(strncmp("LOG ", buff, 4) == 0)
+		{
+			fprintf(stderr, "logging\n");
+		}
+		else if(strncmp("OFF", buff, 3) == 0 && ret == 4)
+		{
+			fprintf(stderr, "Offing...\n");
+		}
+		//fprintf(stderr, "hey\n");
 	}
+	
+	pthread_exit(NULL);
 }
 
 int main(int argc, char* argv[]) 
@@ -142,6 +203,7 @@ int main(int argc, char* argv[])
 				break;
 			case 'l':
 				fprintf(stderr, "logging? do a funtion?\n");
+				chin(optarg);
 				break;
 			case '?':
 				fprintf(stderr, "ERROR: invalid argument\n");
@@ -166,6 +228,14 @@ int main(int argc, char* argv[])
 	mraa_gpio_dir(button, MRAA_GPIO_IN);
 	mraa_gpio_isr(button, MRAA_GPIO_EDGE_RISING, &handler, NULL);
 
+	//pthreading
+	pthread_t id;
+	if(pthread_create(&id, NULL, &pthreader, NULL) != 0)
+	{
+		fprintf(stderr, "failed to create thread\n");
+		exit(1);
+	}
+
 	while(run_flag)
 	{
 		sensor_value = mraa_aio_read(temp_sensor);
@@ -173,7 +243,8 @@ int main(int argc, char* argv[])
 		sleep(period);
 	}
 
+	//join thread
+	pthread_cancel(id);
+	
 	mraa_aio_close(temp_sensor);
-	mraa_gpio_close(button);
-	return 0;
-}
+	mraa_gpio_close(button)
