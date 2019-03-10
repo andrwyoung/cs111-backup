@@ -19,21 +19,12 @@
 
 sig_atomic_t volatile run_flag = 1;
 int period = 1; //time before each measurement in seconds
-char temp_type = 'f'; //celcius or farieheit
+int temp_type = 1; //0 = celcius or 1 = farieheit
 pthread_mutex_t mutexd;
 
 void handler()
 {
-	//get time
-	char time_buff[80];
-	long curr_time = time(NULL);
-	struct tm ts = *localtime(&curr_time);
-	strftime(time_buff, sizeof(time_buff), "%H:%M:%S", &ts);
-
-	write(1, time_buff, 8);
-	write(1, " SHUTDOWN\n", 10);
-
-	//doesn't need to be atomic since all threads are interruped
+	pthread_mutex_unlock(&mutexd);
 	run_flag = 0;
 }
 
@@ -80,7 +71,7 @@ void print_temp(uint16_t value)
 	R *= R0;
 
 	float temp = 1.0/(log(R/R0)/B+1/298.15)-273.15;
-	if(temp_type == 'f') temp = (temp * 9 / 5) + 32;
+	if(temp_type) temp = (temp * 9 / 5) + 32;
 
 	//get time
 	char time_buff[80];
@@ -91,6 +82,63 @@ void print_temp(uint16_t value)
 	dprintf(1, "%s %0.1f\n", time_buff, temp);
 }
 
+void process_command(char command[], int count)
+{
+	if(strncmp("SCALE=", command, 6) == 0)
+	{
+		switch(command[6])
+		{
+			case 'C':
+				temp_type = 0;
+				break;
+			case 'F':
+				temp_type = 1;
+				break;
+			default:
+				fprintf(stderr, "bad scale option\n");
+		}
+		write(1, command, count);
+		write(1, "\n", 1); //formatting
+	}
+	else if(strncmp("PERIOD=", command, 7) == 0)
+	{
+		//checking correct number 
+		int num = atoi(command + 7);
+		if(num > 0)
+		{
+			period = num;
+		}
+		write(1, command, count);
+		write(1, "\n", 1); //formatting
+	}
+	else if(strncmp("STOP", command, count) == 0)
+	{
+		pthread_mutex_lock(&mutexd);	
+		write(1, command, count);
+		write(1, "\n", 1); //formatting
+	}
+	else if(strncmp("START", command, count) == 0)
+	{
+		pthread_mutex_unlock(&mutexd);
+		write(1, command, count);
+		write(1, "\n", 1); //formatting
+	}
+	else if(strncmp("LOG ", command, 4) == 0)
+	{
+		write(1, command, count);
+		write(1, "\n", 1); //formatting
+	}
+	else if(strncmp("OFF", command, count) == 0)
+	{
+		raise(SIGINT);
+		write(1, command, count);
+	}
+	else
+	{
+		fprintf(stderr, "Invalid argument\n");
+	}
+}
+
 //loops and takes in stdin
 void* pthreader()
 {
@@ -99,14 +147,15 @@ void* pthreader()
 	fds[1].events = POLLIN;
 	char buff[BUFF_SIZE]; //for reading in stdin
 	int ret = BUFF_SIZE; //return value for read()
-	
-	char* command = malloc(sizeof(char));
-	int count;
 
+	//assumes command won't be larger than buff_size
+	char* command = malloc(sizeof(char) * BUFF_SIZE);
+	int count = 0; //current length of command buffer
+	
 	while(run_flag)
 	{
 		//wait for things to come in from stdin
-		poll(fds, 1, -1);	
+		poll(fds, 1, 0);	
 
 		//read in the stuff
 		do
@@ -118,40 +167,28 @@ void* pthreader()
 				exit(1);
 			}
 
-			fprintf(stderr, "got %d bytes!\n", ret);
+			//fprintf(stderr, "got %d bytes!\n", ret);
 		} while(ret == BUFF_SIZE);
-
-		//now handle the events
-		//carefully to prevent race conditions
-
-		if(strncmp("SCALE=", buff, 6) == 0 && ret == 8)
+		
+		//now process all those commands
+		int i = 0;
+		while(i < ret)
 		{
-			fprintf(stderr, "Scale\n");
+			if(buff[i] == '\n')
+			{
+				process_command(command, count);
+				count = 0;
+			}
+			else
+			{
+				command[count] = buff[i];
+				count++;
+			}
+			i++;
 		}
-		else if(strncmp("PERIOD=", buff, 7) == 0)
-		{
-			//check for 
-			fprintf(stderr, "Period\n");
-		}
-		else if(strncmp("STOP", buff, 4) == 0 && ret == 5)
-		{
-			fprintf(stderr, "STOPping\n");
-		}
-		else if(strncmp("START", buff, 5) == 0 && ret == 6)
-		{
-			fprintf(stderr, "Starting\n");
-		}
-		else if(strncmp("LOG ", buff, 4) == 0)
-		{
-			fprintf(stderr, "logging\n");
-		}
-		else if(strncmp("OFF", buff, 3) == 0 && ret == 4)
-		{
-			fprintf(stderr, "Offing...\n");
-		}
-		//fprintf(stderr, "hey\n");
 	}
 	
+	free(command);
 	pthread_exit(NULL);
 }
 
@@ -202,7 +239,6 @@ int main(int argc, char* argv[])
 				}
 				break;
 			case 'l':
-				fprintf(stderr, "logging? do a funtion?\n");
 				chin(optarg);
 				break;
 			case '?':
@@ -236,15 +272,31 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
+	pthread_mutex_init(&mutexd, NULL);
 	while(run_flag)
 	{
 		sensor_value = mraa_aio_read(temp_sensor);
 		print_temp(sensor_value);
 		sleep(period);
+
+		pthread_mutex_lock(&mutexd);
+		pthread_mutex_unlock(&mutexd);
 	}
 
-	//join thread
+	//get time
+	char time_buff[80];
+	long curr_time = time(NULL);
+	struct tm ts = *localtime(&curr_time);
+	strftime(time_buff, sizeof(time_buff), "%H:%M:%S", &ts);
+
+	write(1, time_buff, 8);
+	write(1, " SHUTDOWN\n", 10);
+
+	//closing thread
 	pthread_cancel(id);
 	
 	mraa_aio_close(temp_sensor);
-	mraa_gpio_close(button)
+	mraa_gpio_close(button);
+	return 0;
+
+}

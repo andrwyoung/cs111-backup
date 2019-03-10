@@ -4,6 +4,9 @@ ID: 604905807
 
 files:
 
+assumptions:
+commands aren't longer than buffer size (100)
+
 
 sources:
 download page: https://github.com/intel-iot-devkit/mraa
