@@ -44,7 +44,7 @@ int stoi(char* string)
 
 int chin(char file[])
 {
-	int fd = open(file, O_WRONLY);
+	int fd = open(file, O_CREAT | O_WRONLY, 0644);
 	if(fd >= 0)
 	{
 		close(1);

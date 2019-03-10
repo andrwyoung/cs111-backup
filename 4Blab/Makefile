@@ -9,7 +9,7 @@ libs =  -lmraa -lm -lpthread
 
 id = 604905807
 tarname = lab4b-$(id).tar.gz
-tars = Makefile README
+tars = Makefile README checker.c
 
 exec = lab4b
 default: $(exec)
@@ -17,12 +17,14 @@ lab4b: lab4b.c
 	gcc $(flags) -o lab4b lab4b.c $(libs)
 
 .PHONY: check
-check:
-	echo "do this please"
+check: checker
+	./checker
+checker: checker.c
+
 
 .PHONY: clean
 clean:
-	-@rm $(exec) $(tarname)
+	-@rm $(exec) $(tarname) checker
 
 .PHONY: dist
 dist:

@@ -3,9 +3,16 @@ EMAIL: yong.andrew11@gmail.com
 ID: 604905807
 
 files:
+lab4b.c: file that implements lab4b
+Makefile: makes files
+README: this file
+check.c: for make check
 
 assumptions:
 commands aren't longer than buffer size (100)
+
+
+
 
 
 sources:
@@ -15,9 +22,4 @@ doing sensor: https://navinbhaskar.wordpress.com/2016/07/05/cc-on-intel-edisonga
 
 polling: https://stackoverflow.com/questions/37011195/how-to-poll-simultaneously-from-stdin-and-from-sockets
 http://pubs.opengroup.org/onlinepubs/009695399/functions/poll.html
-
-htoms(atoi(port))
-gethostbyname(hostname)
-socket()
-connect()
 
