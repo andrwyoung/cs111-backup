@@ -6,7 +6,7 @@ files:
 lab4b.c: file that implements lab4b
 Makefile: makes files
 README: this file
-check.c: for make check
+checker.c: for make check
 
 assumptions:
 commands aren't longer than buffer size (100)

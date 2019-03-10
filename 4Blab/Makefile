@@ -18,8 +18,9 @@ lab4b: lab4b.c
 
 .PHONY: check
 check: checker
-	./checker
+	./checker && echo sensor OK
 checker: checker.c
+	gcc -o checker checker.c -lmraa
 
 
 .PHONY: clean
