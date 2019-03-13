@@ -15,7 +15,7 @@
 
 #define SENSOR 0
 #define BUTTON 60
-#define BUFF_SIZE 100
+#define BUFF_SIZE 1000
 
 sig_atomic_t volatile run_flag = 1;
 int period = 1; //time before each measurement in seconds

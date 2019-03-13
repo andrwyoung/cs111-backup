@@ -12,16 +12,19 @@
 #include <time.h> //for localtime
 #include <poll.h>
 #include <pthread.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <arpa/inet.h>
+#include <netdb.h>
 
 #define SENSOR 0
 #define BUTTON 60
-#define BUFF_SIZE 100
+#define BUFF_SIZE 1000
 
 sig_atomic_t volatile run_flag = 1;
 int period = 1; //time before each measurement in seconds
 int temp_type = 1; //0 = celcius or 1 = farieheit
 pthread_mutex_t mutexd;
-int mandatory = 7; //mandatory options
 
 void handler()
 {
@@ -36,7 +39,6 @@ int stoi(char* string)
 	{
 		if(!isdigit(string[i]))
 		{
-			fprintf(stderr, "not a number\n");
 			return -1;
 		}
 	}
@@ -45,7 +47,7 @@ int stoi(char* string)
 
 int chin(char file[])
 {
-	int fd = open(file, O_CREAT | O_WRONLY, 0644);
+	int fd = open(file, O_CREAT | O_WRONLY | O_APPEND, 0644);
 	if(fd >= 0)
 	{
 		close(1);
@@ -56,7 +58,7 @@ int chin(char file[])
 	}
 	else
 	{
-		fprintf(stderr,  "failed to open %s\n", file); 
+		fprintf(stderr,  "ERROR: failed to open %s\n", file); 
 		return 1;
 
 	}
@@ -96,7 +98,7 @@ void process_command(char command[], int count)
 				temp_type = 1;
 				break;
 			default:
-				fprintf(stderr, "bad scale option\n");
+				fprintf(stderr, "ERROR: bad scale option\n");
 		}
 		write(1, command, count);
 		write(1, "\n", 1); //formatting
@@ -136,7 +138,7 @@ void process_command(char command[], int count)
 	}
 	else
 	{
-		fprintf(stderr, "Invalid argument\n");
+		fprintf(stderr, "ERROR: invalid argument\n");
 	}
 }
 
@@ -164,7 +166,7 @@ void* pthreader()
 			ret = read(0, buff, BUFF_SIZE);	
 			if(ret < 0)
 			{
-				fprintf(stderr, "read failed\n");
+				fprintf(stderr, "ERROR: read failed\n");
 				exit(1);
 			}
 
@@ -195,6 +197,12 @@ void* pthreader()
 
 int main(int argc, char* argv[]) 
 {
+	int mandatory = 7; //mandatory options
+	int port = -2; //initializing mandatory port number
+	struct hostent* hostname;
+	unsigned long long skl_id;
+
+
 	int c; //return value of that option
 	int option_index = 0;
 	static struct option long_options[] = 
@@ -203,74 +211,105 @@ int main(int argc, char* argv[])
 		{"period",	required_argument,	0, 'p'},
 		{"log",		required_argument,	0, 'l'},
 		{"host",	required_argument,	0, 'h'},
-		{"ip",		required_argument,	0, 'i'},
+		{"id",		required_argument,	0, 'i'},
 		{0, 0, 0, 0,}
 	};
 	
-	while(1)
+	while(optind < argc)
 	{
-		c = getopt_long(argc, argv, "", long_options, &option_index); 
-		if(c == -1)
-			break;
+		//fprintf(stderr, "argv[%d]: %s\n", optind, argv[optind]);
 
-		switch(c)
-		{
-			case 'k':
-				switch(optarg[0])
-				{
-					case 'F':
-						temp_type = 'f';
-						break;
-					case 'C':
-						temp_type = 'c';
-						break;
-					default:
-						fprintf(stderr, "SCALE: invalid argument (F or C)\n");
-						exit(1);
-				}
-				break;
-			case 'p':
-				{
-					int num = stoi(optarg);
-					if (num <= 0)
+		if(argv[optind][0] == '-' && argv[optind][1] == '-' && 
+			(c = getopt_long(argc, argv, "", long_options, &option_index)) != -1 ) { 
+
+			//fprintf(stderr, "processing c: %d\n", c);
+
+			switch(c)
+			{
+				case 'k':
+					switch(optarg[0])
 					{
-						fprintf(stderr, "PEROID: argument must be number\n");
+						case 'F':
+							temp_type = 'f';
+							break;
+						case 'C':
+							temp_type = 'c';
+							break;
+						default:
+							fprintf(stderr, "SCALE: invalid argument (F or C)\n");
+							exit(1);
+					}
+					break;
+				case 'p':
+					{
+						int num = stoi(optarg);
+						if (num <= 0)
+						{
+							fprintf(stderr, "PEROID: argument must be number\n");
+							exit(1);
+						}
+
+						period = num;
+					}
+					break;
+				case 'l':
+					chin(optarg);
+					mandatory ^= 4;
+					break;
+				case 'h':
+					hostname = gethostbyname(optarg);
+					if(hostname == NULL) {
+						fprintf(stderr, "HOST: failed to get hostbyname\n");
 						exit(1);
 					}
+					mandatory ^= 2;
+					break;
+				case 'i':
+					mandatory ^= 1;
+					break;
+				case '?':
+					fprintf(stderr, "ERROR: invalid argument\n");
+					exit(1);
+				default:
+					fprintf(stderr, "FATAL\n");
+				//mark
+			}
+		}
 
-					period = num;
+		else {
+			//fprintf(stderr, "hey\n");
+
+			if(port == -2) {
+				port = stoi(argv[optind]);
+				if(port < 0) {
+					fprintf(stderr, "ERROR: port must be number\n");
+					exit(1);
 				}
-				break;
-			case 'l':
-				chin(optarg);
-				mandatory ^= 4;
-				break;
-			case 'h':
-				mandatory ^= 2;
-				break;
-			case 'i':
-				mandatory ^= 1;
-				break;
-			case '?':
-				fprintf(stderr, "ERROR: invalid argument\n");
+
+			} else {
+				fprintf(stderr, "ERROR: port number already initialized\n");
 				exit(1);
-			default:
-				fprintf(stderr, "FATAL\n");
-			//mark
+			}
+
+			optind++;
 		}
 	}
 
-	fprintf(stderr, "optind: %d, argc: %d\n", optind, argc);
-	if(optind >= argc) {
-		fprintf(stderr, "port number required\n");
+	//checking if port was initialized
+	if(port == -2) {
+		fprintf(stderr, "ERROR: port number must be included as argument (non-opiont)\n");
 		exit(1);
 	}
 
 	//checking argument validaty
 	if(mandatory != 0) {
-		fprintf(stderr, "--log, --host, --ip are mandatory\n");
+		fprintf(stderr, "ERROR: --log, --host, --id are mandatory options\n");
 		exit(1);
 	}
+
+
+
+
 
 	//initializing all components
 	signal(SIGINT, handler);
@@ -278,23 +317,35 @@ int main(int argc, char* argv[])
 
 	uint16_t sensor_value;
 	mraa_aio_context temp_sensor;
-
 	temp_sensor = mraa_aio_init(SENSOR);
 
-	mraa_gpio_context button;
-	button = mraa_gpio_init(BUTTON);
-	mraa_gpio_dir(button, MRAA_GPIO_IN);
-	mraa_gpio_isr(button, MRAA_GPIO_EDGE_RISING, &handler, NULL);
+	pthread_mutex_init(&mutexd, NULL);
+
+	//opening network stuff
+	int netfd = socket(AF_INET, SOCK_STREAM, 0);
+	if(netfd < 1) {
+		fprintf(stderr, "ERROR: failed to initiate socket\n");
+		exit(1);
+	}
+
+	struct sockaddr_in* address = malloc(sizeof(struct sockaddr_in));
+	address->sin_port = htons(port);
+	if(connect(netfd, (struct sockaddr*)address, sizeof(&address)) < 0) {
+		fprintf(stderr, "ERROR: couldn't connect\n");
+		exit(1);
+	}
+
 
 	//pthreading
 	pthread_t id;
 	if(pthread_create(&id, NULL, &pthreader, NULL) != 0)
 	{
-		fprintf(stderr, "failed to create thread\n");
+		fprintf(stderr, "ERROR: failed to create thread\n");
 		exit(1);
 	}
 
-	pthread_mutex_init(&mutexd, NULL);
+
+	//actually running now
 	while(run_flag)
 	{
 		sensor_value = mraa_aio_read(temp_sensor);
@@ -316,9 +367,7 @@ int main(int argc, char* argv[])
 
 	//closing thread
 	pthread_cancel(id);
-	
 	mraa_aio_close(temp_sensor);
-	mraa_gpio_close(button);
+	free(address);
 	return 0;
-
 }

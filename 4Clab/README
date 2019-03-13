@@ -10,3 +10,6 @@ SSL_library_init()
 
 SSL_shutdown(SSL *ssl)
 SSL_free(SSL *ssl)
+
+sources:
+sockaddr_in: https://stackoverflow.com/questions/18609397/whats-the-difference-between-sockaddr-sockaddr-in-and-sockaddr-in6
