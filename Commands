@@ -3,6 +3,8 @@ debugfs -f cmd_file trivial.img > fileinfo.txt
 
 git clone https://github.com/intel-iot-devkit/mraa.git
 
+
+sudo apt install software-properties-common
 sudo apt-get install dirmngr
 apt-get install cmake
 apt-get install swig
