@@ -25,12 +25,10 @@ sig_atomic_t volatile run_flag = 1;
 int period = 1; //time before each measurement in seconds
 int temp_type = 1; //0 = celcius or 1 = farieheit
 pthread_mutex_t mutexd;
+int logfile = -1; //fd for logfile if it exists
+int netfd = -1;
 
-void handler()
-{
-	pthread_mutex_unlock(&mutexd);
-	run_flag = 0;
-}
+int leave = 0;
 
 int stoi(char* string)
 {
@@ -45,23 +43,20 @@ int stoi(char* string)
 	return atoi(string);
 }
 
-int chin(char file[])
+int id_checker(char* string)
 {
-	int fd = open(file, O_CREAT | O_WRONLY | O_APPEND, 0644);
-	if(fd >= 0)
-	{
-		close(1);
-		dup(fd);
-		close(fd);
-		return 0;
-
-	}
-	else
-	{
-		fprintf(stderr,  "ERROR: failed to open %s\n", file); 
+	if(strlen(string) != 9)
 		return 1;
-
+	unsigned int i;
+	for(i = 0; i < strlen(string); i++)
+	{
+		if(!isdigit(string[i]))
+		{
+			return 1;
+		}
 	}
+
+	return 0;
 }
 
 void print_temp(uint16_t value)
@@ -82,7 +77,8 @@ void print_temp(uint16_t value)
 	struct tm ts = *localtime(&curr_time);
 	strftime(time_buff, sizeof(time_buff), "%H:%M:%S", &ts);
 
-	dprintf(1, "%s %0.1f\n", time_buff, temp);
+	dprintf(logfile, "%s %0.1f\n", time_buff, temp);
+	dprintf(netfd , "%s %0.1f\n", time_buff, temp);
 }
 
 void process_command(char command[], int count)
@@ -100,8 +96,6 @@ void process_command(char command[], int count)
 			default:
 				fprintf(stderr, "ERROR: bad scale option\n");
 		}
-		write(1, command, count);
-		write(1, "\n", 1); //formatting
 	}
 	else if(strncmp("PERIOD=", command, 7) == 0)
 	{
@@ -111,43 +105,46 @@ void process_command(char command[], int count)
 		{
 			period = num;
 		}
-		write(1, command, count);
-		write(1, "\n", 1); //formatting
 	}
 	else if(strncmp("STOP", command, count) == 0)
 	{
 		pthread_mutex_lock(&mutexd);	
-		write(1, command, count);
-		write(1, "\n", 1); //formatting
 	}
 	else if(strncmp("START", command, count) == 0)
 	{
 		pthread_mutex_unlock(&mutexd);
-		write(1, command, count);
-		write(1, "\n", 1); //formatting
 	}
 	else if(strncmp("LOG ", command, 4) == 0)
 	{
-		write(1, command, count);
-		write(1, "\n", 1); //formatting
 	}
 	else if(strncmp("OFF", command, count) == 0)
 	{
-		raise(SIGINT);
-		write(1, command, count);
+		//get time
+		char time_buff[80];
+		long curr_time = time(NULL);
+		struct tm ts = *localtime(&curr_time);
+		strftime(time_buff, sizeof(time_buff), "%H:%M:%S", &ts);
+
+		dprintf(netfd , "%s SHUTDOWN\n", time_buff);
+		dprintf(logfile , "%s SHUTDOWN\n", time_buff);
+		dprintf(logfile , "%s\n", command);
+
+		run_flag = 0;
+		pthread_mutex_unlock(&mutexd);
+		return;
 	}
 	else
 	{
 		fprintf(stderr, "ERROR: invalid argument\n");
+		return;
 	}
+
+	dprintf(logfile , "%s\n", command);
 }
 
 //loops and takes in stdin
 void* pthreader()
 {
-	struct pollfd fds[1];
-	fds[1].fd = 0;
-	fds[1].events = POLLIN;
 	char buff[BUFF_SIZE]; //for reading in stdin
 	int ret = BUFF_SIZE; //return value for read()
 
@@ -157,13 +154,10 @@ void* pthreader()
 	
 	while(run_flag)
 	{
-		//wait for things to come in from stdin
-		poll(fds, 1, 0);	
-
 		//read in the stuff
 		do
 		{
-			ret = read(0, buff, BUFF_SIZE);	
+			ret = read(netfd, buff, BUFF_SIZE);	
 			if(ret < 0)
 			{
 				fprintf(stderr, "ERROR: read failed\n");
@@ -189,6 +183,8 @@ void* pthreader()
 			}
 			i++;
 		}
+
+		bzero(buff, BUFF_SIZE);
 	}
 	
 	free(command);
@@ -200,7 +196,7 @@ int main(int argc, char* argv[])
 	int mandatory = 7; //mandatory options
 	int port = -2; //initializing mandatory port number
 	struct hostent* hostname;
-	unsigned long long skl_id;
+	char* id_num;
 
 
 	int c; //return value of that option
@@ -253,7 +249,11 @@ int main(int argc, char* argv[])
 					}
 					break;
 				case 'l':
-					chin(optarg);
+					logfile = open(optarg, O_WRONLY | O_CREAT | O_APPEND, 0644);
+					if(logfile < 0) {
+						fprintf(stderr, "LOG: failed to open logfile\n");
+						exit(1);
+					}
 					mandatory ^= 4;
 					break;
 				case 'h':
@@ -262,9 +262,16 @@ int main(int argc, char* argv[])
 						fprintf(stderr, "HOST: failed to get hostbyname\n");
 						exit(1);
 					}
+					//fprintf(stderr, "hostname: %d\n", hostname->h_length);
 					mandatory ^= 2;
 					break;
 				case 'i':
+					id_num = optarg;
+					if(id_checker(optarg) != 0)
+					{
+						fprintf(stderr, "ID: invalid 9 digit id\n");
+						exit(1);
+					}
 					mandatory ^= 1;
 					break;
 				case '?':
@@ -307,33 +314,40 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 
-
-
-
-
 	//initializing all components
-	signal(SIGINT, handler);
 	mraa_init();
-
 	uint16_t sensor_value;
 	mraa_aio_context temp_sensor;
 	temp_sensor = mraa_aio_init(SENSOR);
 
 	pthread_mutex_init(&mutexd, NULL);
 
+
+
 	//opening network stuff
-	int netfd = socket(AF_INET, SOCK_STREAM, 0);
+	netfd = socket(AF_INET, SOCK_STREAM, 0);
 	if(netfd < 1) {
 		fprintf(stderr, "ERROR: failed to initiate socket\n");
 		exit(1);
 	}
 
-	struct sockaddr_in* address = malloc(sizeof(struct sockaddr_in));
-	address->sin_port = htons(port);
-	if(connect(netfd, (struct sockaddr*)address, sizeof(&address)) < 0) {
+	//setting up connection variables
+	struct sockaddr_in address;
+	bzero((char*) &address, sizeof(address));
+
+	address.sin_family = AF_INET;
+	bcopy((char*)hostname->h_addr, (char*)&address.sin_addr.s_addr, hostname->h_length);
+	address.sin_port = htons(port);
+
+	//address
+	if(connect(netfd, (struct sockaddr*) &address, sizeof(address)) < 0) {
 		fprintf(stderr, "ERROR: couldn't connect\n");
 		exit(1);
 	}
+	//initiate
+	dprintf(netfd , "ID=%s\n", id_num);
+	dprintf(logfile , "ID=%s\n", id_num);
+
 
 
 	//pthreading
@@ -356,18 +370,10 @@ int main(int argc, char* argv[])
 		pthread_mutex_unlock(&mutexd);
 	}
 
-	//get time
-	char time_buff[80];
-	long curr_time = time(NULL);
-	struct tm ts = *localtime(&curr_time);
-	strftime(time_buff, sizeof(time_buff), "%H:%M:%S", &ts);
-
-	write(1, time_buff, 8);
-	write(1, " SHUTDOWN\n", 10);
-
-	//closing thread
+	//closing and freeing everything
 	pthread_cancel(id);
 	mraa_aio_close(temp_sensor);
-	free(address);
+	close(netfd);
+	close(logfile);
 	return 0;
 }

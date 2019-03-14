@@ -1,15 +1,19 @@
-htoms(atoi(port))
-gethostbyname(hostname)
-socket()
-connect()
+NAME: Andrew Yong
+EMAIL: yong.andrew11@gmail.com
+ID: 604905807
 
-install libssl-dev
-SSL_library_init()
+files:
+tcp.c: source file for lab4c_tcp
+tls.c: source file for lab4c_tls
+Makefile: the file to make
+README: this file
+converter.c: file to convert from float to string
+converter.h: header file for converter.c
 
--lssl -lcrypto
-
-SSL_shutdown(SSL *ssl)
-SSL_free(SSL *ssl)
+assumptions:
+buffer doesn't exceed like 1000
+temp is always below 100 and above 10 (in both scales)
 
 sources:
 sockaddr_in: https://stackoverflow.com/questions/18609397/whats-the-difference-between-sockaddr-sockaddr-in-and-sockaddr-in6
+connecting: http://www.linuxhowtos.org/data/6/client.c

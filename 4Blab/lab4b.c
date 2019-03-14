@@ -22,6 +22,8 @@ int period = 1; //time before each measurement in seconds
 int temp_type = 1; //0 = celcius or 1 = farieheit
 pthread_mutex_t mutexd;
 
+int logfile = -1; //for logfile
+
 void handler()
 {
 	pthread_mutex_unlock(&mutexd);
@@ -40,25 +42,6 @@ int stoi(char* string)
 		}
 	}
 	return atoi(string);
-}
-
-int chin(char file[])
-{
-	int fd = open(file, O_CREAT | O_WRONLY, 0644);
-	if(fd >= 0)
-	{
-		close(1);
-		dup(fd);
-		close(fd);
-		return 0;
-
-	}
-	else
-	{
-		fprintf(stderr,  "failed to open %s\n", file); 
-		return 1;
-
-	}
 }
 
 void print_temp(uint16_t value)
@@ -80,6 +63,10 @@ void print_temp(uint16_t value)
 	strftime(time_buff, sizeof(time_buff), "%H:%M:%S", &ts);
 
 	dprintf(1, "%s %0.1f\n", time_buff, temp);
+	if(logfile >= 0)
+	{	
+		dprintf(logfile, "%s %0.1f\n", time_buff, temp);
+	}
 }
 
 void process_command(char command[], int count)
@@ -97,8 +84,6 @@ void process_command(char command[], int count)
 			default:
 				fprintf(stderr, "bad scale option\n");
 		}
-		write(1, command, count);
-		write(1, "\n", 1); //formatting
 	}
 	else if(strncmp("PERIOD=", command, 7) == 0)
 	{
@@ -108,34 +93,34 @@ void process_command(char command[], int count)
 		{
 			period = num;
 		}
-		write(1, command, count);
-		write(1, "\n", 1); //formatting
 	}
 	else if(strncmp("STOP", command, count) == 0)
 	{
 		pthread_mutex_lock(&mutexd);	
-		write(1, command, count);
-		write(1, "\n", 1); //formatting
+
 	}
 	else if(strncmp("START", command, count) == 0)
 	{
 		pthread_mutex_unlock(&mutexd);
-		write(1, command, count);
-		write(1, "\n", 1); //formatting
+
 	}
 	else if(strncmp("LOG ", command, 4) == 0)
 	{
-		write(1, command, count);
-		write(1, "\n", 1); //formatting
 	}
 	else if(strncmp("OFF", command, count) == 0)
 	{
 		raise(SIGINT);
-		write(1, command, count);
 	}
 	else
 	{
 		fprintf(stderr, "Invalid argument\n");
+		return;
+	}
+
+	if(logfile >= 0)
+	{
+		write(logfile, command, count);
+		write(logfile, "\n", 1); //formatting
 	}
 }
 
@@ -186,6 +171,8 @@ void* pthreader()
 			}
 			i++;
 		}
+
+		bzero(buff, BUFF_SIZE);
 	}
 	
 	free(command);
@@ -239,14 +226,21 @@ int main(int argc, char* argv[])
 				}
 				break;
 			case 'l':
-				chin(optarg);
+				{
+					logfile = open(optarg, O_CREAT | O_WRONLY | O_APPEND, 0644);
+					if(logfile < 0)
+					{
+						fprintf(stderr,  "failed to open %s\n", optarg); 
+						return 1;
+
+					}
+				} 
 				break;
 			case '?':
 				fprintf(stderr, "ERROR: invalid argument\n");
 				exit(1);
 			default:
 				fprintf(stderr, "FATAL\n");
-			//mark
 		}
 	}
 
@@ -291,10 +285,14 @@ int main(int argc, char* argv[])
 
 	write(1, time_buff, 8);
 	write(1, " SHUTDOWN\n", 10);
+	if(logfile >= 0)
+	{
+		write(logfile, time_buff, 8);
+		write(logfile, " SHUTDOWN\n", 10);
+	}
 
 	//closing thread
 	pthread_cancel(id);
-	
 	mraa_aio_close(temp_sensor);
 	mraa_gpio_close(button);
 	return 0;
